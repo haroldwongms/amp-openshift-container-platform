@@ -1,0 +1,348 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json",
+	"handler": "Microsoft.Compute.MultiVm",
+	"version": "0.1.2-preview",
+	"parameters": {
+		"basics": [{
+			"name": "adminUsername",
+			"type": "Microsoft.Compute.UserNameTextBox",
+			"label": "VM Admin User Name",
+			"defaultValue": "clusteradmin",
+			"toolTip": "The name of the Admin User for initial SSH access to all OCP Nodes.",
+			"constraints": {
+				"required": true
+			},
+			"osPlatform": "Linux"
+		}, {
+			"name": "adminPassword",
+			"type": "Microsoft.Compute.CredentialsCombo",
+			"label": {
+				"authenticationType": "Authentication Type",
+				"sshPublicKey": "SSH Public Key for VM Admin User"
+			},
+			"toolTip": {
+				"sshPublicKey": "SSH Public Key for the VM Admin User. Corresponds to the Private Key in the Key Vault that was configured as part of the pre-work."
+			},
+			"constraints": {
+				"required": true
+			},
+			"options": {
+				"hideConfirmation": false,
+				"hidePassword": true
+			},
+			"osPlatform": "Linux"
+		}],
+		"steps": [{
+			"name": "infrastructureSettings",
+			"label": "Infrastructure Settings",
+			"subLabel": {
+				"preValidation": "Configure Infrastructure Settings",
+				"postValidation": "Done"
+			},
+			"bladeTitle": "Infrastructure Settings",
+			"elements": [{
+				"name": "openshiftClusterPrefix",
+				"type": "Microsoft.Common.TextBox",
+				"label": "OCP Cluster Name Prefix",
+				"defaultValue": "ocpcluster",
+				"toolTip": "The Prefix for the name of the OCP Nodes. Must be between 1 and 20 characters.",
+				"constraints": {
+					"required": true,
+					"regex": "^[a-z0-9A-Z]{1,20}$",
+					"validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-20 characters long."
+				}
+			}, {
+				"name": "clusterSize",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "OpenShift Cluster Size",
+				"defaultValue": "Medium",
+				"toolTip": "The size of Cluster to deploy - Small, Medium or Large.",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "Small",
+						"value": "small"
+						},
+						{
+						"label": "Medium",
+						"value": "medium"
+						},
+						{
+						"label": "Large",
+						"value": "large"
+						}
+					]
+				},
+				"visible": true
+			}, {
+				"name": "clusterSizeSmall",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "Small Cluster Configuration",
+				"defaultValue": "",
+				"toolTip": "For display purposes only",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "1 Bastion Node of size Standard DS2v2",
+						"value": "bastion"
+						},
+						{
+						"label": "1 Master Node of size Standard DS2v2",
+						"value": "master"
+						},
+						{
+						"label": "1 Infra Node of size Standard DS2v2",
+						"value": "infra"
+						},
+						{
+						"label": "2 App Node of size Standard DS2v2",
+						"value": "node"
+						},
+						{
+						"label": "128 GB Data Disk for Docker Volume per VM",
+						"value": "disk"
+						},
+						{
+						"label": "Total Cores Required: 10",
+						"value": "cores"
+						}
+					]
+				},
+				"visible": "[equals(steps('infrastructureSettings').clusterSize, 'small')]"
+			}, {
+				"name": "clusterSizeMedium",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "Medium Cluster Configuration",
+				"defaultValue": "",
+				"toolTip": "For display purposes only",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "1 Bastion Node of size Standard DS2v2",
+						"value": "bastion"
+						},
+						{
+						"label": "3 Master Nodes of size Standard DS3v2",
+						"value": "master"
+						},
+						{
+						"label": "2 Infra Nodes of size Standard DS3v2",
+						"value": "infra"
+						},
+						{
+						"label": "4 App Nodes of size Standard DS3v2",
+						"value": "node"
+						},
+						{
+						"label": "256 GB Data Disk for Docker Volume per VM",
+						"value": "disk"
+						},
+						{
+						"label": "Total Cores Required: 38",
+						"value": "cores"
+						}
+					]
+				},
+				"visible": "[equals(steps('infrastructureSettings').clusterSize, 'medium')]"
+			}, {
+				"name": "clusterSizeLarge",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "Large Cluster Configuration",
+				"defaultValue": "",
+				"toolTip": "For display purposes only",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "1 Bastion Node of size Standard DS2v2",
+						"value": "bastion"
+						},
+						{
+						"label": "3 Master Nodes of size Standard DS3v2",
+						"value": "master"
+						},
+						{
+						"label": "2 Infra Nodes of size Standard DS3v2",
+						"value": "infra"
+						},
+						{
+						"label": "6 App Nodes of size Standard DS4v2",
+						"value": "node"
+						},
+						{
+						"label": "512 GB Data Disk for Docker Volume",
+						"value": "disk"
+						},
+						{
+						"label": "Total Cores Required: 70",
+						"value": "cores"
+						}
+					]
+				},
+				"visible": "[equals(steps('infrastructureSettings').clusterSize, 'large')]"
+			}, {
+				"name": "keyVaultResourceGroup",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Key Vault Resource Group Name",
+				"toolTip": "Name of the Resource Group that contains the Key Vault used to store the Private Key.",
+				"constraints": {
+					"required": true
+				}
+			}, {
+				"name": "keyVaultName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Key Vault Name",
+				"toolTip": "Name of the Key Vault that contains the Secret used to store the Private Key.",
+				"constraints": {
+					"required": true
+				}
+			}, {
+				"name": "keyVaultSecret",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Secret Name",
+				"toolTip": "Name of the Secret that contains the Private Key.",
+				"constraints": {
+					"required": true
+				}
+			}]
+		}, {
+			"name": "openShiftSettings",
+			"label": "OpenShift Container Platform Settings",
+			"subLabel": {
+				"preValidation": "Configure OpenShift Container Platform Settings",
+				"postValidation": "Done"
+			},
+			"bladeTitle": "OpenShift Container Platform Settings",
+			"elements": [{
+				"name": "openshiftPassword",
+				"type": "Microsoft.Common.PasswordBox",
+				"label": {
+					"password": "OpenShift Admin User Password",
+					"confirmPassword": "Confirm OpenShift Admin User Password"
+				},
+				"toolTip": {
+					"password": "Password for the OpenShift Admin User - not the VM Admin User."
+				},
+				"constraints": {
+					"required": true
+				},
+				"options": {
+					"hideConfirmation": false
+				}
+			}, {
+				"name": "rhsmUsername",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Red Hat Subscription Manager User Name",
+				"toolTip": "User Name to access your Red Hat Subscription - access.redhat.com. This is used to register the RHEL instance to your subscription and will not be stored by Microsoft or Red Hat.",
+				"constraints": {
+					"required": true
+				}
+			}, {
+				"name": "rhsmPassword",
+				"type": "Microsoft.Common.PasswordBox",
+				"label": {
+					"password": "Red Hat Subscription Manager User Password"
+				},
+				"toolTip": "Password to access your Red Hat Subscription - access.redhat.com. This is used to register the RHEL instance to your subscription and will not be stored by Microsoft or Red Hat.",
+				"constraints": {
+					"required": true
+				},
+				"options": {
+					"hideConfirmation": true
+				}
+			}, {
+				"name": "rhsmPoolId",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Red Hat Subscription Manager Pool ID",
+				"toolTip": "The Pool ID that contains OpenShift Container Platform entitlement. Ensure you have enough entitlements of OpenShift Container Platform for the installation of the cluster.",
+				"constraints": {
+					"required": true
+				}
+			}, {
+				"name": "enableAzure",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "Configure Azure Cloud Provider",
+				"defaultValue": "No",
+				"toolTip": "Configure OpenShift to use Azure Cloud Provider. Necessary if using Azure disk attach for persistent volumes.",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "Yes",
+						"value": "true"
+						},
+						{
+						"label": "No",
+						"value": "false"
+						}
+					]
+				},
+				"visible": true
+			}, {
+				"name": "aadClientId",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Azure AD Service Principal Client ID GUID",
+				"toolTip": "Azure AD Service Principal Client ID GUID - also known as AppID.",
+				"constraints": {
+					"required": true,
+					"regex": "^[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{12}$"
+				},
+				"visible": "[equals(steps('openShiftSettings').enableAzure, 'true')]"
+			}, {
+				"name": "aadClientSecret",
+				"type": "Microsoft.Common.PasswordBox",
+				"label": {
+					"password": "Azure AD Service Principal Client ID Secret"
+				},
+				"toolTip": "Azure AD Service Principal Client ID Secret.",
+				"constraints": {
+					"required": true
+				},
+				"options": {
+					"hideConfirmation": true
+				},
+				"visible": "[equals(steps('openShiftSettings').enableAzure, 'true')]"
+			}, {
+				"name": "defaultSubDomainType",
+				"type": "Microsoft.Common.DropDown",
+				"label": "Default Router Subdomain",
+				"toolTip": "Select xipio for testing or custom to enter your own subdomain for production.",
+				"defaultValue": "xipio",
+				"constraints": {
+					"allowedValues": [{
+						"label": "xipio",
+						"value": "xipio"
+					}, {
+						"label": "custom",
+						"value": "custom"
+					}]
+				}
+			}, {
+				"name": "defaultSubDomain",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Enter your custom subdomain",
+				"toolTip": "The custom subdomain to expose applications.",
+				"constraints": {
+					"required": true
+				},
+				"visible": "[equals(steps('openShiftSettings').defaultSubDomainType, 'custom')]"
+			}]
+		}],
+		"outputs": {
+			"sshPublicKey": "[basics('adminPassword').sshPublicKey]",
+			"clusterSize": "[steps('infrastructureSettings').clusterSize]",
+			"openshiftClusterPrefix": "[steps('infrastructureSettings').openshiftClusterPrefix]",
+			"adminUsername": "[basics('adminUsername')]",
+			"openshiftPassword": "[steps('openShiftSettings').openshiftPassword]",
+			"rhsmUsername": "[steps('openShiftSettings').rhsmUsername]",
+			"rhsmPassword": "[steps('openShiftSettings').rhsmPassword]",
+			"rhsmPoolId": "[steps('openShiftSettings').rhsmPoolId]",
+			"keyVaultResourceGroup": "[steps('infrastructureSettings').keyVaultResourceGroup]",
+			"keyVaultName": "[steps('infrastructureSettings').keyVaultName]",
+			"keyVaultSecret": "[steps('infrastructureSettings').keyVaultSecret]",
+			"enableAzure": "[steps('openShiftSettings').enableAzure]",
+			"aadClientId": "[steps('openShiftSettings').aadClientId]",
+			"aadClientSecret": "[steps('openShiftSettings').aadClientSecret]",
+			"defaultSubDomainType": "[steps('openShiftSettings').defaultSubDomainType]",
+			"defaultSubDomain": "[steps('openShiftSettings').defaultSubDomain]"
+		}
+	}
+}
