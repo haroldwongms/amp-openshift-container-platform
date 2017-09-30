@@ -308,8 +308,8 @@
 				"defaultValue": "xipio",
 				"constraints": {
 					"allowedValues": [{
-						"label": "xipio",
-						"value": "xipio"
+						"label": "nipio",
+						"value": "nipio"
 					}, {
 						"label": "custom",
 						"value": "custom"
@@ -327,6 +327,7 @@
 			}]
 		}],
 		"outputs": {
+			"location": "[location()]",
 			"sshPublicKey": "[basics('adminPassword').sshPublicKey]",
 			"clusterSize": "[steps('infrastructureSettings').clusterSize]",
 			"openshiftClusterPrefix": "[steps('infrastructureSettings').openshiftClusterPrefix]",
