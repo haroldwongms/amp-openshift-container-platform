@@ -73,7 +73,7 @@
 			}
 		},
 		"sshPublicKey": {
-			"type": "securestring",
+			"type": "string",
 			"metadata": {
 				"description": "SSH public key for all VMs"
 			}
