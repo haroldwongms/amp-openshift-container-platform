@@ -52,7 +52,7 @@ subscription-manager repos \
 # Install base packages and update system to latest packages
 echo $(date) " - Install base packages and update system to latest packages"
 
-yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion httpd-tools nodejs
+yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion httpd-tools kexec-tools sos psacct
 yum -y update --exclude=WALinuxAgent
 
 # Ensure proper repos are still enabled
@@ -91,11 +91,5 @@ EOF
 echo $(date) " - Updating ansible.cfg file"
 
 ansible-playbook ./updateansiblecfg.yaml
-
-# Install Azure CLI
-
-echo $(date) " - Installing Azure CLI"
-
-npm install -g azure-cli
 
 echo $(date) " - Script Complete"
