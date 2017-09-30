@@ -9,6 +9,12 @@
 				"artifactsBaseUrl": ""
 			},
 			"defaultValue": "https://raw.githubusercontent.com/Microsoft/openshift-container-platform/master"
+		},		
+		"location": {
+		  "type": "string",
+		  "metadata": {
+			"description": "Location"
+		  }
 		},
 		"openshiftClusterPrefix": {
 			"type": "string",
@@ -95,7 +101,6 @@
 		},
 		"enableAzure": {
 			"type": "string",
-			"minLength": 1,
 			"defaultValue": "false",
 			"allowedValues": [
 				"true", "false"
@@ -122,27 +127,27 @@
 		},
 		"defaultSubDomainType": {
 			"type": "string",
-			"defaultValue": "xipio",
+			"defaultValue": "nipio",
 			"allowedValues": [
-				"xipio", "custom"
+				"nipio", "custom"
 			],
 			"metadata": {
-				"description": "Default Subdomain type - xip.io or custom (defined in next parameter)"
+				"description": "Default Subdomain type - nip.io or custom (defined in next parameter)"
 			}
 		},
 		"defaultSubDomain": {
 			"type": "string",
 			"defaultValue": "contoso.com",
 			"metadata": {
-				"description": "Default Subdomain for application routing (Wildcard DNS) - must enter something even if you are using xip.io. Must be all lowercase"
+				"description": "Default Subdomain for application routing (Wildcard DNS) - must enter something even if you are using nip.io. Must be all lowercase"
 			}
 		}
 	},
 	"variables": {
 		"resourceGroupName": "[resourceGroup().id]",
 		"apiVersionCompute": "2017-03-30",
-		"apiVersionNetwork": "2016-03-30",
-		"apiVersionStorage": "2015-06-15",
+		"apiVersionNetwork": "2017-09-01",
+		"apiVersionStorage": "2017-06-01",
 		"apiVersionLinkTemplate": "2015-01-01",
 		"defaultSubDomain": "[toLower(parameters('defaultSubDomain'))]",
 		"namingInfix": "[toLower(parameters('openshiftClusterPrefix'))]",
@@ -168,7 +173,7 @@
 		"bastionPublicIp": "bastionpublicip",
 		"bastionPublicIpDnsLabel": "[concat('bastiondns', uniqueString(resourceGroup().id))]",
 		"persistentVolume1Type": "Standard_LRS",
-		"persistentVolume2Type": "Standard_LRS",
+		"persistentVolume1Tier": "Standard",
 		
 		"masterLoadBalancerName": "[concat(variables('openshiftMasterHostname'), 'lb')]",
 		"masterPublicIpAddressId": "[resourceId('Microsoft.Network/publicIPAddresses', variables('openshiftMasterPublicIpDnsLabel'))]",
@@ -256,7 +261,7 @@
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"name": "[concat(variables('openshiftBastionHostname'), '-nsg')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"tags": {
 				"displayName": "BastionNSG",
 				"provider": "[variables('redHatTags').provider]",
@@ -282,7 +287,7 @@
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"name": "[concat(variables('openshiftMasterHostname'), '-nsg')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"tags": {
 				"displayName": "MasterNSG",
 				"provider": "[variables('redHatTags').provider]",
@@ -347,7 +352,7 @@
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"name": "[concat(variables('openshiftInfraHostname'), '-nsg')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"tags": {
 				"displayName": "InfraNSG",
 				"provider": "[variables('redHatTags').provider]",
@@ -412,7 +417,7 @@
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"name": "[concat(variables('openshiftNodeHostname'), '-nsg')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"tags": {
 				"displayName": "NodeNSG",
 				"provider": "[variables('redHatTags').provider]",
@@ -476,7 +481,7 @@
 		}, {
 			"type": "Microsoft.Network/virtualNetworks",
 			"name": "[variables('virtualNetworkName')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "VirtualNetwork"
@@ -502,98 +507,112 @@
 		}, {
 			"type": "Microsoft.Storage/storageAccounts",
 			"name": "[variables('newStorageAccountBastion')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
 			"apiVersion": "[variables('apiVersionStorage')]",
 			"tags": {
 				"displayName": "BastionStorageAccount",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
-			"properties": {
-				"accountType": "Premium_LRS"
+			"sku": {
+				"name": "Premium_LRS",
+				"tier": "Premium"
 			}
 		}, {
 			"type": "Microsoft.Storage/storageAccounts",
 			"name": "[variables('newStorageAccountMaster')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
 			"apiVersion": "[variables('apiVersionStorage')]",
 			"tags": {
-				"displayName": "DiagnosticsStorageAccount",
+				"displayName": "MasterStorageAccount",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
-			"properties": {
-				"accountType": "Premium_LRS"
+			"sku": {
+				"name": "Premium_LRS",
+				"tier": "Premium"
 			}
 		}, {
 			"type": "Microsoft.Storage/storageAccounts",
 			"name": "[variables('newStorageAccountInfra')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
 			"apiVersion": "[variables('apiVersionStorage')]",
 			"tags": {
-				"displayName": "DiagnosticsStorageAccount",
+				"displayName": "InfraStorageAccount",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
-			"properties": {
-				"accountType": "Premium_LRS"
+			"sku": {
+				"name": "Premium_LRS",
+				"tier": "Premium"
 			}
 		}, {
 			"type": "Microsoft.Storage/storageAccounts",
 			"name": "[variables('newStorageAccountNode')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
 			"apiVersion": "[variables('apiVersionStorage')]",
 			"tags": {
-				"displayName": "DiagnosticsStorageAccount",
+				"displayName": "NodeStorageAccount",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
-			"properties": {
-				"accountType": "Premium_LRS"
+			"sku": {
+				"name": "Premium_LRS",
+				"tier": "Premium"
 			}
 		}, {
 			"type": "Microsoft.Storage/storageAccounts",
 			"name": "[variables('diagStorageAccount')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
 			"apiVersion": "[variables('apiVersionStorage')]",
 			"tags": {
 				"displayName": "DiagnosticsStorageAccount",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
-			"properties": {
-				"accountType": "Standard_LRS"
+			"sku": {
+				"name": "Standard_LRS",
+				"tier": "Standard"
 			}
 		}, {
 			"type": "Microsoft.Storage/storageAccounts",
 			"name": "[variables('newStorageAccountRegistry')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
 			"apiVersion": "[variables('apiVersionStorage')]",
 			"tags": {
 				"displayName": "RegistryStorageAccount",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
-			"properties": {
-				"accountType": "Standard_LRS"
+			"sku": {
+				"name": "Standard_LRS",
+				"tier": "Standard"
 			}
 		}, {
 			"type": "Microsoft.Storage/storageAccounts",
 			"name": "[variables('newStorageAccountPersistentVolume1')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
 			"apiVersion": "[variables('apiVersionStorage')]",
 			"tags": {
 				"displayName": "PersistentVolume1StorageAccount",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
-			"properties": {
-				"accountType": "[variables('persistentVolume1Type')]"
+			"sku": {
+				"name": "[variables('persistentVolume1Type')]",
+				"tier": "[variables('persistentVolume1Tier')]"
 			}
 		}, {
 			"type": "Microsoft.Network/publicIPAddresses",
 			"name": "[variables('bastionPublicIp')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "BastionPublicIP",
@@ -609,7 +628,7 @@
 		}, {
 			"type": "Microsoft.Network/publicIPAddresses",
 			"name": "[variables('infraLbPublicIpDnsLabel')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "InfraLBPublicIP",
@@ -625,7 +644,7 @@
 		}, {
 			"type": "Microsoft.Network/publicIPAddresses",
 			"name": "[variables('openshiftMasterPublicIpDnsLabel')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "MasterPublicIP",
@@ -641,7 +660,7 @@
 		}, {
 			"type": "Microsoft.Compute/availabilitySets",
 			"name": "masteravailabilityset",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionCompute')]",
 			"tags": {
 				"displayName": "MasterAvailabilitySet",
@@ -651,7 +670,7 @@
 		}, {
 			"type": "Microsoft.Compute/availabilitySets",
 			"name": "infraavailabilityset",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionCompute')]",
 			"tags": {
 				"displayName": "InfraAvailabilitySet",
@@ -661,7 +680,7 @@
 		}, {
 			"type": "Microsoft.Compute/availabilitySets",
 			"name": "nodeavailabilityset",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionCompute')]",
 			"tags": {
 				"displayName": "NodeAvailabilitySet",
@@ -671,7 +690,7 @@
 		}, {
 			"type": "Microsoft.Network/loadBalancers",
 			"name": "[variables('masterLoadBalancerName')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "MasterLB",
@@ -753,7 +772,7 @@
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"type": "Microsoft.Network/loadBalancers/inboundNatRules",
 			"name": "[concat(variables('masterLoadBalancerName'), '/', 'SSH-', variables('openshiftMasterHostname'), copyIndex())]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"copy": {
 				"name": "masterLbLoop",
 				"count": "[variables('masterInstanceCount')]",
@@ -776,7 +795,7 @@
 		{
 			"type": "Microsoft.Network/loadBalancers",
 			"name": "[variables('infraLoadBalancerName')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "InfraLB",
@@ -876,7 +895,7 @@
 		}, {
 			"type": "Microsoft.Network/networkInterfaces",
 			"name": "[concat(variables('openshiftBastionHostname'), '-nic')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "BastionNetworkInterface",
@@ -907,7 +926,7 @@
 		}, {
 			"type": "Microsoft.Network/networkInterfaces",
 			"name": "[concat(variables('openshiftMasterHostname'), '-', copyIndex(), '-nic')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "MasterNetworkInterface",
@@ -949,7 +968,7 @@
 		}, {
 			"type": "Microsoft.Network/networkInterfaces",
 			"name": "[concat(variables('openshiftInfraHostname'), '-', copyIndex(), '-nic')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "InfraNetworkInterface",
@@ -985,7 +1004,7 @@
 		}, {
 			"type": "Microsoft.Network/networkInterfaces",
 			"name": "[concat(variables('openshiftNodeHostname'), '-', copyIndex(), '-nic')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "NodeNetworkInterface",
@@ -1031,7 +1050,7 @@
 				},
 				"parameters": {
 					"location": {
-						"value": "[variables('location')]"
+						"value": "[parameters('location')]"
 					},
 					"sshKeyPath": {
 						"value": "[variables('sshKeyPath')]"
@@ -1087,7 +1106,7 @@
 				},
 				"parameters": {
 					"location": {
-						"value": "[variables('location')]"
+						"value": "[parameters('location')]"
 					},
 					"sshKeyPath": {
 						"value": "[variables('sshKeyPath')]"
@@ -1149,7 +1168,7 @@
 				},
 				"parameters": {
 					"location": {
-						"value": "[variables('location')]"
+						"value": "[parameters('location')]"
 					},
 					"sshKeyPath": {
 						"value": "[variables('sshKeyPath')]"
@@ -1211,7 +1230,7 @@
 				},
 				"parameters": {
 					"location": {
-						"value": "[variables('location')]"
+						"value": "[parameters('location')]"
 					},
 					"sshKeyPath": {
 						"value": "[variables('sshKeyPath')]"
@@ -1254,7 +1273,7 @@
 		}, {
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"name": "[concat(variables('openshiftBastionHostname'), '/deployOpenShift')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionCompute')]",
 			"tags": {
 				"displayName": "PrepBastion",
@@ -1281,7 +1300,7 @@
 		}, {
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"name": "[concat(variables('openshiftMasterHostname'), '-', copyIndex(), '/prepMasters')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionCompute')]",
 			"tags": {
 				"displayName": "PrepMaster",
@@ -1312,7 +1331,7 @@
 		}, {
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"name": "[concat(variables('openshiftInfraHostname'), '-', copyIndex(), '/prepNodes')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionCompute')]",
 			"tags": {
 				"displayName": "PrepInfra",
@@ -1343,7 +1362,7 @@
 		}, {
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"name": "[concat(variables('openshiftNodeHostname'), '-', copyIndex(), '/prepNodes')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionCompute')]",
 			"tags": {
 				"displayName": "PrepNode",
@@ -1448,8 +1467,8 @@
 					"aadClientSecret": {
 						"value": "[parameters('aadClientSecret')]"
 					},
-					"xipioDomain": {
-						"value": "[concat(reference(variables('infraLbPublicIpDnsLabel')).ipAddress, '.xip.io')]"
+					"nipioDomain": {
+						"value": "[concat(reference(variables('infraLbPublicIpDnsLabel')).ipAddress, '.nip.io')]"
 					},
 					"customDomain": {
 						"value": "[variables('defaultSubDomain')]"
