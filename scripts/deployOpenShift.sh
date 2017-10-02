@@ -758,10 +758,9 @@ then
 	   echo $(date) "- Cloud Provider setup failed to delete stuck Master nodes or was not able to set them as unschedulable"
 	   exit 10
 	fi
-
-	oc label nodes --all logging-infra-fluentd=true logging=true
-
 fi
+
+oc label nodes --all logging-infra-fluentd=true logging=true
 
 # Delete postinstall.yml file
 echo $(date) "- Deleting unecessary files"
