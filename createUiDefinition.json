@@ -223,8 +223,7 @@
 					"password": "OpenShift Admin User Password",
 					"confirmPassword": "Confirm OpenShift Admin User Password"
 				},
-				"toolTip": "Password for the OpenShift Admin User - not the VM Admin User."
-				},
+				"toolTip": "Password for the OpenShift Admin User - not the VM Admin User.",
 				"constraints": {
 					"required": true
 				},
@@ -243,7 +242,7 @@
 				"name": "rhsmPassword",
 				"type": "Microsoft.Common.PasswordBox",
 				"label": {
-					"password": "Red Hat Subscription Manager User Password"
+					"password": "Red Hat Subscription Manager User Password",
 					"confirmPassword": "Confirm Password"
 				},
 				"toolTip": "Password to access your Red Hat Subscription - access.redhat.com. This is used to register the RHEL instance to your subscription and will not be stored by Microsoft or Red Hat.",
