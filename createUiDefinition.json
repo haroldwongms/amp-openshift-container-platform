@@ -1,5 +1,5 @@
 {
-	"$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json",
+	"$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
 	"handler": "Microsoft.Compute.MultiVm",
 	"version": "0.1.2-preview",
 	"parameters": {
@@ -18,9 +18,13 @@
 			"type": "Microsoft.Compute.CredentialsCombo",
 			"label": {
 				"authenticationType": "Authentication Type",
+				"password": "Password",
+				"confirmPassword": "Confirm password",
 				"sshPublicKey": "SSH Public Key for VM Admin User"
 			},
 			"toolTip": {
+				"authenticationType": "Authentication type",
+				"password": "Password",
 				"sshPublicKey": "SSH Public Key for the VM Admin User. Corresponds to the Private Key in the Key Vault that was configured as part of the pre-work."
 			},
 			"constraints": {
@@ -219,9 +223,7 @@
 					"password": "OpenShift Admin User Password",
 					"confirmPassword": "Confirm OpenShift Admin User Password"
 				},
-				"toolTip": {
-					"password": "Password for the OpenShift Admin User - not the VM Admin User."
-				},
+				"toolTip": "Password for the OpenShift Admin User - not the VM Admin User.",
 				"constraints": {
 					"required": true
 				},
@@ -240,7 +242,8 @@
 				"name": "rhsmPassword",
 				"type": "Microsoft.Common.PasswordBox",
 				"label": {
-					"password": "Red Hat Subscription Manager User Password"
+					"password": "Red Hat Subscription Manager User Password",
+					"confirmPassword": "Confirm Password"
 				},
 				"toolTip": "Password to access your Red Hat Subscription - access.redhat.com. This is used to register the RHEL instance to your subscription and will not be stored by Microsoft or Red Hat.",
 				"constraints": {
@@ -275,7 +278,7 @@
 						}
 					]
 				},
-				"visible": true
+				"visible": "[not(equals(steps('infrastructureSettings').clusterSize, 'small'))]"
 			}, {
 				"name": "aadClientId",
 				"type": "Microsoft.Common.TextBox",
@@ -290,7 +293,8 @@
 				"name": "aadClientSecret",
 				"type": "Microsoft.Common.PasswordBox",
 				"label": {
-					"password": "Azure AD Service Principal Client ID Secret"
+					"password": "Azure AD Service Principal Client ID Secret",
+					"confirmPassword": "Confirm Password"
 				},
 				"toolTip": "Azure AD Service Principal Client ID Secret.",
 				"constraints": {
@@ -305,11 +309,11 @@
 				"type": "Microsoft.Common.DropDown",
 				"label": "Default Router Subdomain",
 				"toolTip": "Select xipio for testing or custom to enter your own subdomain for production.",
-				"defaultValue": "xipio",
+				"defaultValue": "nipio",
 				"constraints": {
 					"allowedValues": [{
-						"label": "xipio",
-						"value": "xipio"
+						"label": "nipio",
+						"value": "nipio"
 					}, {
 						"label": "custom",
 						"value": "custom"
@@ -321,12 +325,14 @@
 				"label": "Enter your custom subdomain",
 				"toolTip": "The custom subdomain to expose applications.",
 				"constraints": {
+					"regex": "^([A-z0-9]+(-[A-z0-9]+)*\\.)+[a-z]{2,}$",
 					"required": true
 				},
 				"visible": "[equals(steps('openShiftSettings').defaultSubDomainType, 'custom')]"
 			}]
 		}],
 		"outputs": {
+			"location": "[location()]",
 			"sshPublicKey": "[basics('adminPassword').sshPublicKey]",
 			"clusterSize": "[steps('infrastructureSettings').clusterSize]",
 			"openshiftClusterPrefix": "[steps('infrastructureSettings').openshiftClusterPrefix]",

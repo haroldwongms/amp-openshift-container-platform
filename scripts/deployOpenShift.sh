@@ -29,31 +29,14 @@ STORAGEACCOUNT1=${22}
 SAKEY1=${23}
 
 BASTION=$(hostname)
+
+# Determine if Commercial Azure or Azure Government
 CLOUD=$( curl -H Metadata:true "http://169.254.169.254/metadata/instance/compute/location?api-version=2017-04-02&format=text" | cut -c 1-2 )
 CLOUD=${CLOUD^^}
 
 MASTERLOOP=$((MASTERCOUNT - 1))
 INFRALOOP=$((INFRACOUNT - 1))
 NODELOOP=$((NODECOUNT - 1))
-
-# Create Container in PV Storage Accounts
-if [[ $AZURE == "true" ]]
-then
-
-echo $(date) " - Creating container in PV Storage Accounts"
-
-azure telemetry --disable
-
-if [[ $CLOUD == "US" ]]
-then
-	azure login --environment AzureUSGovernment --service-principal -u $AADCLIENTID -p $AADCLIENTSECRET --tenant $TENANTID
-else
-	azure login --service-principal -u $AADCLIENTID -p $AADCLIENTSECRET --tenant $TENANTID
-fi
-
-azure storage container create -a $STORAGEACCOUNT1 -k $SAKEY1 --container vhds
-
-fi
 
 # Generate private keys for use by Ansible
 echo $(date) " - Generating Private keys for use by Ansible for OpenShift Installation"
@@ -122,7 +105,11 @@ cat > /home/${SUDOUSER}/assignrootpassword.yml <<EOF
     shell: echo "${PASSWORD}"|passwd root --stdin
 EOF
 
-# Run on MASTER-0 - Configure registry to use Azure Storage
+# Run on MASTER-0 node - configure registry to use Azure Storage
+# Create docker registry config based on Commercial Azure or Azure Government
+
+if [[ $CLOUD == "US" ]]
+then
 
 cat > /home/${SUDOUSER}/dockerregistry.yml <<EOF
 ---
@@ -135,8 +122,26 @@ cat > /home/${SUDOUSER}/dockerregistry.yml <<EOF
     description: "Set registry to use Azure Storage"
   tasks:
   - name: Configure docker-registry to use Azure Storage
-    shell: oc env dc docker-registry -e REGISTRY_STORAGE=azure -e REGISTRY_STORAGE_AZURE_ACCOUNTNAME=$REGISTRYSA -e REGISTRY_STORAGE_AZURE_ACCOUNTKEY=$REGSAKEY -e REGISTRY_STORAGE_AZURE_CONTAINER=registry
+    shell: oc env dc docker-registry -e REGISTRY_STORAGE=azure -e REGISTRY_STORAGE_AZURE_ACCOUNTNAME=$REGISTRYSA -e REGISTRY_STORAGE_AZURE_ACCOUNTKEY=$ACCOUNTKEY -e REGISTRY_STORAGE_AZURE_CONTAINER=registry -e REGISTRY_STORAGE_AZURE_REALM=core.usgovcloudapi.net
 EOF
+
+else
+
+cat > /home/${SUDOUSER}/dockerregistry.yml <<EOF
+---
+- hosts: master0
+  gather_facts: no
+  remote_user: ${SUDOUSER}
+  become: yes
+  become_method: sudo
+  vars:
+    description: "Set registry to use Azure Storage"
+  tasks:
+  - name: Configure docker-registry to use Azure Storage
+    shell: oc env dc docker-registry -e REGISTRY_STORAGE=azure -e REGISTRY_STORAGE_AZURE_ACCOUNTNAME=$REGISTRYSA -e REGISTRY_STORAGE_AZURE_ACCOUNTKEY=$ACCOUNTKEY -e REGISTRY_STORAGE_AZURE_CONTAINER=registry
+EOF
+
+fi
 
 # Run on MASTER-0 - Configure Storage Class
 
@@ -466,9 +471,9 @@ ansible_ssh_user=$SUDOUSER
 ansible_become=yes
 openshift_install_examples=true
 deployment_type=openshift-enterprise
-openshift_release=v3.5
+openshift_release=v3.6
 docker_udev_workaround=True
-openshift_use_dnsmasq=false
+openshift_use_dnsmasq=True
 openshift_master_default_subdomain=$ROUTING
 openshift_override_hostname_check=true
 #osm_use_cockpit=false
@@ -476,6 +481,7 @@ os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
 console_port=443
 openshift_cloudprovider_kind=azure
 osm_default_node_selector='type=app'
+openshift_disable_check=memory_availability,docker_image_availability
 
 # default selectors for router and registry services
 openshift_router_selector='type=infra'
@@ -487,6 +493,24 @@ openshift_master_cluster_public_vip=$MASTERPUBLICIPADDRESS
 
 # Enable HTPasswdPasswordIdentityProvider
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+
+# Setup metrics
+openshift_hosted_metrics_deploy=false
+openshift_metrics_cassandra_storage_type=dynamic
+openshift_metrics_start_cluster=true
+openshift_metrics_hawkular_nodeselector={"type":"infra"}
+openshift_metrics_cassandra_nodeselector={"type":"infra"}
+openshift_metrics_heapster_nodeselector={"type":"infra"}
+openshift_hosted_metrics_public_url=https://metrics.$ROUTING/hawkular/metrics
+
+# Setup logging
+openshift_hosted_logging_deploy=false
+openshift_hosted_logging_storage_kind=dynamic
+openshift_logging_fluentd_nodeselector={"logging":"true"}
+openshift_logging_es_nodeselector={"type":"infra"}
+openshift_logging_kibana_nodeselector={"type":"infra"}
+openshift_logging_curator_nodeselector={"type":"infra"}
+openshift_master_logging_public_url=https://kibana.$ROUTING
 
 # host group for masters
 [masters]
@@ -539,9 +563,9 @@ ansible_ssh_user=$SUDOUSER
 ansible_become=yes
 openshift_install_examples=true
 deployment_type=openshift-enterprise
-openshift_release=v3.5
+openshift_release=v3.6
 docker_udev_workaround=True
-openshift_use_dnsmasq=false
+openshift_use_dnsmasq=True
 openshift_master_default_subdomain=$ROUTING
 openshift_override_hostname_check=true
 #osm_use_cockpit=false
@@ -549,6 +573,7 @@ os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
 console_port=443
 openshift_cloudprovider_kind=azure
 osm_default_node_selector='type=app'
+openshift_disable_check=memory_availability,docker_image_availability
 
 # default selectors for router and registry services
 openshift_router_selector='type=infra'
@@ -561,6 +586,24 @@ openshift_master_cluster_public_vip=$MASTERPUBLICIPADDRESS
 
 # Enable HTPasswdPasswordIdentityProvider
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+
+# Setup metrics
+openshift_hosted_metrics_deploy=false
+openshift_metrics_cassandra_storage_type=dynamic
+openshift_metrics_start_cluster=true
+openshift_metrics_hawkular_nodeselector={"type":"infra"}
+openshift_metrics_cassandra_nodeselector={"type":"infra"}
+openshift_metrics_heapster_nodeselector={"type":"infra"}
+openshift_hosted_metrics_public_url=https://metrics.$ROUTING/hawkular/metrics
+
+# Setup logging
+openshift_hosted_logging_deploy=false
+openshift_hosted_logging_storage_kind=dynamic
+openshift_logging_fluentd_nodeselector={"logging":"true"}
+openshift_logging_es_nodeselector={"type":"infra"}
+openshift_logging_kibana_nodeselector={"type":"infra"}
+openshift_logging_curator_nodeselector={"type":"infra"}
+openshift_master_logging_public_url=https://kibana.$ROUTING
 
 # host group for masters
 [masters]
@@ -608,10 +651,32 @@ EOF
 
 fi
 
+echo $(date) " - Running network_manager.yml playbook" 
+DOMAIN=`domainname -d` 
+
+# Setup NetworkManager to manage eth0 
+runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/openshift-node/network_manager.yml" 
+
+# Configure resolv.conf on all hosts through NetworkManager 
+echo $(date) " - Setting up NetworkManager on eth0" 
+
+runuser -l $SUDOUSER -c "ansible all -b -m service -a \"name=NetworkManager state=restarted\"" 
+sleep 5 
+runuser -l $SUDOUSER -c "ansible all -b -m command -a \"nmcli con modify eth0 ipv4.dns-search $DOMAIN\"" 
+runuser -l $SUDOUSER -c "ansible all -b -m service -a \"name=NetworkManager state=restarted\"" 
+
 # Initiating installation of OpenShift Container Platform using Ansible Playbook
 echo $(date) " - Installing OpenShift Container Platform via Ansible Playbook"
 
 runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml"
+
+if [ $? -eq 0 ]
+then
+   echo $(date) " - OpenShift Cluster installed successfully"
+else
+   echo $(date) " - OpenShift Cluster failed to install"
+   exit 6
+fi
 
 echo $(date) " - Modifying sudoers"
 
@@ -666,25 +731,60 @@ runuser -l $SUDOUSER -c "ansible-playbook ~/dockerregistry.yml"
 
 if [[ $AZURE == "true" ]]
 then
+	# Create Storage Classes
+	echo $(date) "- Creating Storage Classes"
 
-# Create Storage Classes
-echo $(date) "- Creating Storage Classes"
+	runuser -l $SUDOUSER -c "ansible-playbook ~/configurestorageclass.yml"
 
-runuser -l $SUDOUSER -c "ansible-playbook ~/configurestorageclass.yml"
+	echo $(date) "- Sleep for 120"
 
-echo $(date) "- Sleep for 120"
+	sleep 120
 
-sleep 120
+	# Execute setup-azure-master and setup-azure-node playbooks to configure Azure Cloud Provider
+	echo $(date) "- Configuring OpenShift Cloud Provider to be Azure"
 
-# Execute setup-azure-master and setup-azure-node playbooks to configure Azure Cloud Provider
-echo $(date) "- Configuring OpenShift Cloud Provider to be Azure"
+	runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-master.yml"
 
-runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-master.yml"
-runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-node-master.yml"
-runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-node.yml"
-runuser -l $SUDOUSER -c "ansible-playbook ~/deletestucknodes.yml"
+	if [ $? -eq 0 ]
+	then
+	   echo $(date) " - Cloud Provider setup of master config on Master Nodes completed successfully"
+	else
+	   echo $(date) "- Cloud Provider setup of master config on Master Nodes failed to completed"
+	   exit 7
+	fi
 
+	runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-node-master.yml"
+
+	if [ $? -eq 0 ]
+	then
+	   echo $(date) " - Cloud Provider setup of node config on Master Nodes completed successfully"
+	else
+	   echo $(date) "- Cloud Provider setup of node config on Master Nodes failed to completed"
+	   exit 8
+	fi
+
+	runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-node.yml"
+
+	if [ $? -eq 0 ]
+	then
+	   echo $(date) " - Cloud Provider setup of node config on App Nodes completed successfully"
+	else
+	   echo $(date) "- Cloud Provider setup of node config on App Nodes failed to completed"
+	   exit 9
+	fi
+
+	runuser -l $SUDOUSER -c "ansible-playbook ~/deletestucknodes.yml"
+
+	if [ $? -eq 0 ]
+	then
+	   echo $(date) " - Cloud Provider setup of OpenShift Cluster completed successfully"
+	else
+	   echo $(date) "- Cloud Provider setup failed to delete stuck Master nodes or was not able to set them as unschedulable"
+	   exit 10
+	fi
 fi
+
+oc label nodes --all logging-infra-fluentd=true logging=true
 
 # Delete postinstall.yml file
 echo $(date) "- Deleting unecessary files"
