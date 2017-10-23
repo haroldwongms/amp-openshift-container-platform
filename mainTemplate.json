@@ -171,13 +171,11 @@
 			{ "name": "[variables('newStorageAccountRegistry')]", "tagName": "RegistryStorageAccount", "skuName": "Standard_LRS", "skuTier": "Standard" },
 			{ "name": "[variables('newStorageAccountPersistentVolume1')]", "tagName": "PersistentVolume1StorageAccount", "skuName": "[variables('persistentVolume1Type')]", "skuTier": "[variables('persistentVolume1Tier')]" }
 		],
-		"newStorageAccountArrayCount": 7,
 		"availabilitySetArray": [
 			{ "name": "masteravailabilityset", "tagName": "MasterAvailabilitySet" },
 			{ "name": "infraavailabilityset", "tagName": "InfraAvailabilitySet" },
 			{ "name": "nodeavailabilityset", "tagName": "NodeAvailabilitySet" }
 		],
-		"availabilitySetArrayCount": 3,
 		"addressPrefix": "10.0.0.0/8",
 		"masterSubnetPrefix": "10.1.0.0/16",
 		"nodeSubnetPrefix": "10.2.0.0/16",
@@ -533,7 +531,7 @@
 			},
 			"copy": {
 				"name": "storageLoop",
-				"count": "[variables('newStorageAccountArrayCount')]"
+				"count": "[length(variables('newStorageAccountArray'))]"
 			},
 			"sku": {
 				"name": "[variables('newStorageAccountArray')[copyIndex()].skuName]",
@@ -599,7 +597,7 @@
 			},
 			"copy": {
 				"name": "availabiltySetLoop",
-				"count": "[variables('availabilitySetArrayCount')]"
+				"count": "[length(variables('availabilitySetArray'))]"
 			}
 		}, {
 			"type": "Microsoft.Network/loadBalancers",
