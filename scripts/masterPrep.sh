@@ -15,13 +15,13 @@ sleep 10
 # Register Host with Cloud Access Subscription
 echo $(date) " - Register host with Cloud Access Subscription"
 
-subscription-manager register --username="$RHSMUSERNAME" --password="$RHSMPASSWORD"
+subscription-manager register --username="$RHSMUSERNAME" --password="$RHSMPASSWORD" || subscription-manager register --activationkey="$RHSMUSERNAME" --org="$RHSMPASSWORD"
 
 if [ $? -eq 0 ]
 then
    echo "Subscribed successfully"
 else
-   echo "Incorrect Username or Password specified"
+   echo "Incorrect Username / Password or Activation Key / Org specified"
    exit 3
 fi
 
@@ -35,7 +35,7 @@ else
       then
          echo "Pool $POOL_ID was already attached and was not attached again."
 	  else
-         echo "Incorrect Pool ID or no entitlements available"
+         echo "Pool $POOL_ID is incorrect or has no entitlements available"
          exit 4
    fi
 fi

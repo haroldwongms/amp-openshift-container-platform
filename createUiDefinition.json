@@ -233,8 +233,8 @@
 			}, {
 				"name": "rhsmUsername",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Red Hat Subscription Manager User Name",
-				"toolTip": "User Name to access your Red Hat Subscription - access.redhat.com. This is used to register the RHEL instance to your subscription and will not be stored by Microsoft or Red Hat.",
+				"label": "Red Hat Subscription Manager User Name or Activation Key",
+				"toolTip": "User Name or Activation Key to access your Red Hat Subscription - access.redhat.com. This is used to register the RHEL instance to your subscription and will not be stored by Microsoft or Red Hat.",
 				"constraints": {
 					"required": true
 				}
@@ -242,10 +242,10 @@
 				"name": "rhsmPassword",
 				"type": "Microsoft.Common.PasswordBox",
 				"label": {
-					"password": "Red Hat Subscription Manager User Password",
+					"password": "Red Hat Subscription Manager User Password or Org ID",
 					"confirmPassword": "Confirm Password"
 				},
-				"toolTip": "Password to access your Red Hat Subscription - access.redhat.com. This is used to register the RHEL instance to your subscription and will not be stored by Microsoft or Red Hat.",
+				"toolTip": "Password (for User Name) or Organization ID (for Activation Key) to access your Red Hat Subscription - access.redhat.com. This is used to register the RHEL instance to your subscription and will not be stored by Microsoft or Red Hat.",
 				"constraints": {
 					"required": true
 				},
