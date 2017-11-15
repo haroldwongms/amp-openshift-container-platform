@@ -91,6 +91,18 @@
 			"metadata": {
 				"description": "Compute API Version"
 			}
+		},
+		"imageReference": {
+			"type": "object",
+			"metadata": {
+				"description": "Image Reference"
+			}
+		},
+		"plan": {
+			"type": "object",
+			"metadata": {
+				"description": "OS Plan"
+			}
 		}
 	},
 	"variables": {

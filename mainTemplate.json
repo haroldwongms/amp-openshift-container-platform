@@ -1061,6 +1061,12 @@
 					},
 					"apiVersionCompute": {
 						"value": "[variables('apiVersionCompute')]"
+					},
+					"imageReference": {
+						"value": "[variables('imageReference')]"
+					},
+					"plan": {
+						"value": "[variables('plan')]"
 					}
 				}
 			}
@@ -1123,6 +1129,12 @@
 					},
 					"apiVersionCompute": {
 						"value": "[variables('apiVersionCompute')]"
+					},
+					"imageReference": {
+						"value": "[variables('imageReference')]"
+					},
+					"plan": {
+						"value": "[variables('plan')]"
 					}
 				}
 			}
@@ -1185,6 +1197,12 @@
 					},
 					"apiVersionCompute": {
 						"value": "[variables('apiVersionCompute')]"
+					},
+					"imageReference": {
+						"value": "[variables('imageReference')]"
+					},
+					"plan": {
+						"value": "[variables('plan')]"
 					}
 				}
 			}
