@@ -55,6 +55,7 @@ subscription-manager repos \
 echo $(date) " - Install base packages and update system to latest packages"
 
 yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion httpd-tools kexec-tools sos psacct
+yum -y install cloud-utils-growpart.noarch
 yum -y update --exclude=WALinuxAgent
 
 # Ensure proper repos are still enabled
@@ -72,6 +73,18 @@ atomic-openshift-excluder unexclude
 echo $(date) " - Installing OpenShift utilities"
 
 yum -y install atomic-openshift-utils
+
+# Grow Root File System
+echo $(date) " - Grow Root FS"
+
+rootdev=`findmnt --target / -o SOURCE -n`
+rootdrivename=`lsblk -no pkname $rootdev`
+rootdrive="/dev/"$rootdrivename
+majorminor=`lsblk  $rootdev -o MAJ:MIN | tail -1`
+part_number=${majorminor#*:}
+
+growpart $rootdrive $part_number -u on
+xfs_growfs $rootdev
 
 # Install Docker 1.12.x
 echo $(date) " - Installing Docker 1.12.x"
