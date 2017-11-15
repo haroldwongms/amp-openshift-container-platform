@@ -1,4 +1,4 @@
-﻿{
+{
 	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
 	"contentVersion": "1.0.0.0",
 	"parameters": {
@@ -247,15 +247,15 @@
 				"dataDiskSize": 512
 			}
 		},
-		"osType": {
+		"imageReference": {
 			"publisher": "redhat",
-			"offer": "rhel-byol",
+			"offer": "rhel-ocp-marketplace",
 			"sku": "rhel74",
 			"version": "latest"
 		},
 		"plan": {
 			"publisher": "redhat",
-			"product": "rhel-byol",
+			"product": "rhel-ocp-marketplace",
 			"name": "rhel74"
 		},
 		"singlequote": "'",
@@ -993,6 +993,12 @@
 					},
 					"apiVersionCompute": {
 						"value": "[variables('apiVersionCompute')]"
+					},
+					"imageReference": {
+						"value": "[variables('imageReference')]"
+					},
+					"plan": {
+						"value": "[variables('plan')]"
 					}
 				}
 			}
