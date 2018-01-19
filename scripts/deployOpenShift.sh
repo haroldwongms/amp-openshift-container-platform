@@ -211,6 +211,7 @@ cat > /home/${SUDOUSER}/setup-azure-master.yml <<EOF
           "subscriptionID" : "{{ g_subscriptionId }}",
           "tenantID" : "{{ g_tenantId }}",
           "resourceGroup": "{{ g_resourceGroup }}",
+          "location": "{{ g_location }}"
         } 
     notify:
     - restart atomic-openshift-master
@@ -283,6 +284,7 @@ cat > /home/${SUDOUSER}/setup-azure-master.yml <<EOF
           "subscriptionID" : "{{ g_subscriptionId }}",
           "tenantID" : "{{ g_tenantId }}",
           "resourceGroup": "{{ g_resourceGroup }}",
+          "location": "{{ g_location }}"
         } 
     notify:
     - restart atomic-openshift-master-api
@@ -351,6 +353,7 @@ cat > /home/${SUDOUSER}/setup-azure-node-master.yml <<EOF
           "subscriptionID" : "{{ g_subscriptionId }}",
           "tenantID" : "{{ g_tenantId }}",
           "resourceGroup": "{{ g_resourceGroup }}",
+          "location": "{{ g_location }}"
         } 
     notify:
     - restart atomic-openshift-node
@@ -406,6 +409,7 @@ cat > /home/${SUDOUSER}/setup-azure-node.yml <<EOF
           "subscriptionID" : "{{ g_subscriptionId }}",
           "tenantID" : "{{ g_tenantId }}",
           "resourceGroup": "{{ g_resourceGroup }}",
+          "location": "{{ g_location }}"
         } 
     notify:
     - restart atomic-openshift-node
@@ -424,31 +428,39 @@ cat > /home/${SUDOUSER}/setup-azure-node.yml <<EOF
       - azure
     notify:
     - restart atomic-openshift-node
-  - name: delete the node so it can recreate itself
-    command: oc delete node {{inventory_hostname}}
-    delegate_to: ${BASTION}
-  - name: sleep to let node come back to life
-    pause:
-       seconds: 90
 EOF
 
 # Create Playbook to delete stuck Master nodes and set as not schedulable
 
-cat > /home/${SUDOUSER}/deletestucknodes.yml <<EOF
+cat > /home/${SUDOUSER}/deletestuckmasternodes.yml <<EOF
 - hosts: masters
   gather_facts: no
   become: yes
   vars:
-    description: "Delete stuck nodes"
+    description: "Delete stuck master nodes"
   tasks:
   - name: Delete stuck nodes so it can recreate itself
     command: oc delete node {{inventory_hostname}}
-    delegate_to: ${BASTION}
+    delegate_to: ${MASTER}-0
   - name: sleep between deletes
     pause:
-      seconds: 25
+      seconds: 60
   - name: set masters as unschedulable
     command: oadm manage-node {{inventory_hostname}} --schedulable=false
+EOF
+
+# Create Playbook to delete stuck infra and app nodes
+
+cat > /home/${SUDOUSER}/deletestucknodes.yml <<EOF
+- hosts: nodes:!masters
+  gather_facts: no
+  become: yes
+  vars:
+    description: "Delete stuck infra and app nodes"
+  tasks:
+  - name: Delete stuck nodes so it can recreate itself
+    command: oc delete node {{inventory_hostname}}
+    delegate_to: ${MASTER}-0
 EOF
 
 # Create Ansible Hosts File
@@ -498,6 +510,7 @@ openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 
 openshift_hosted_metrics_deploy=false
 #openshift_metrics_cassandra_storage_type=dynamic
 openshift_metrics_start_cluster=true
+openshift_metrics_startup_timeout=120
 openshift_metrics_hawkular_nodeselector={"type":"infra"}
 openshift_metrics_cassandra_nodeselector={"type":"infra"}
 openshift_metrics_heapster_nodeselector={"type":"infra"}
@@ -511,6 +524,7 @@ openshift_logging_es_nodeselector={"type":"infra"}
 openshift_logging_kibana_nodeselector={"type":"infra"}
 openshift_logging_curator_nodeselector={"type":"infra"}
 openshift_master_logging_public_url=https://kibana.$ROUTING
+openshift_logging_master_public_url=https://$MASTERPUBLICIPHOSTNAME:8443
 
 # host group for masters
 [masters]
@@ -591,6 +605,7 @@ openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 
 openshift_hosted_metrics_deploy=false
 #openshift_metrics_cassandra_storage_type=dynamic
 openshift_metrics_start_cluster=true
+openshift_metrics_startup_timeout=120
 openshift_metrics_hawkular_nodeselector={"type":"infra"}
 openshift_metrics_cassandra_nodeselector={"type":"infra"}
 openshift_metrics_heapster_nodeselector={"type":"infra"}
@@ -604,6 +619,7 @@ openshift_logging_es_nodeselector={"type":"infra"}
 openshift_logging_kibana_nodeselector={"type":"infra"}
 openshift_logging_curator_nodeselector={"type":"infra"}
 openshift_master_logging_public_url=https://kibana.$ROUTING
+openshift_logging_master_public_url=https://$MASTERPUBLICIPHOSTNAME:8443
 
 # host group for masters
 [masters]
@@ -683,12 +699,6 @@ echo $(date) " - Modifying sudoers"
 sed -i -e "s/Defaults    requiretty/# Defaults    requiretty/" /etc/sudoers
 sed -i -e '/Defaults    env_keep += "LC_TIME LC_ALL LANGUAGE LINGUAS _XKB_CHARSET XAUTHORITY"/aDefaults    env_keep += "PATH"' /etc/sudoers
 
-# Deploying Registry
-echo $(date) "- Registry automatically deployed to infra nodes"
-
-# Deploying Router
-echo $(date) "- Router automaticaly deployed to infra nodes"
-
 echo $(date) "- Re-enabling requiretty"
 
 sed -i -e "s/# Defaults    requiretty/Defaults    requiretty/" /etc/sudoers
@@ -763,6 +773,19 @@ then
 	   exit 8
 	fi
 
+	echo $(date) " - Sleep for 60"
+	
+	sleep 60
+	runuser -l $SUDOUSER -c "ansible-playbook ~/deletestuckmasternodes.yml"
+
+	if [ $? -eq 0 ]
+	then
+	   echo $(date) " - Master nodes deleted and recreated successfully. nonschedulable labels reapplied."
+	else
+	   echo $(date) "- Cloud Provider setup failed to delete stuck Master nodes or was not able to set them as unschedulable"
+	   exit 9
+	fi
+	
 	runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-node.yml"
 
 	if [ $? -eq 0 ]
@@ -770,18 +793,36 @@ then
 	   echo $(date) " - Cloud Provider setup of node config on App Nodes completed successfully"
 	else
 	   echo $(date) "- Cloud Provider setup of node config on App Nodes failed to completed"
-	   exit 9
+	   exit 10
 	fi
 
+	echo $(date) " - Sleep for 60"
+	sleep 60
 	runuser -l $SUDOUSER -c "ansible-playbook ~/deletestucknodes.yml"
 
 	if [ $? -eq 0 ]
 	then
 	   echo $(date) " - Cloud Provider setup of OpenShift Cluster completed successfully"
 	else
-	   echo $(date) "- Cloud Provider setup failed to delete stuck Master nodes or was not able to set them as unschedulable"
-	   exit 10
+	   echo $(date) "- Cloud Provider setup failed to delete stuck infra and app nodes"
+	   exit 11
 	fi
+
+	echo $(date) "- Restart OVS service" 
+	
+ 	echo $(date) "- Sleep for 30" 
+ 	
+ 	sleep 30	 
+ 	runuser -l $SUDOUSER -c  "oc label nodes --all logging-infra-fluentd=true logging=true"
+
+ 	runuser -l $SUDOUSER -c  "ansible all -b  -m service -a 'name=openvswitch state=restarted' " 
+
+ 	echo $(date) "- Restart openshift-node service" 
+	echo $(date) "- Sleep for 60" 
+	
+ 	sleep 60 
+ 	runuser -l $SUDOUSER -c  "ansible nodes -b  -m service -a 'name=atomic-openshift-node state=restarted' " 
+
 fi
 
 oc label nodes --all logging-infra-fluentd=true logging=true
@@ -797,6 +838,7 @@ rm /home/${SUDOUSER}/vars.yml
 rm /home/${SUDOUSER}/setup-azure-master.yml
 rm /home/${SUDOUSER}/setup-azure-node-master.yml
 rm /home/${SUDOUSER}/setup-azure-node.yml
+rm /home/${SUDOUSER}/deletestuckmasternodes.yml
 rm /home/${SUDOUSER}/deletestucknodes.yml
 
 echo $(date) " - Script complete"

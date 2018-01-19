@@ -55,7 +55,7 @@
 			"type": "string",
 			"minLength": 1,
 			"metadata": {
-				"description": "Red Hat Subscription Manager Username or Organization ID. If usernamepassword selected in previous input, then use Username; otherwise entier Organization ID. To find your Organization ID, run on registered server: subscription-manager identity"
+				"description": "Red Hat Subscription Manager Username or Organization ID. To find your Organization ID, run on registered server: subscription-manager identity"
 			}
 		},
 		"rhsmPassword": {
@@ -101,7 +101,7 @@
 		},
 		"enableAzure": {
 			"type": "string",
-			"defaultValue": "false",
+			"defaultValue": "true",
 			"allowedValues": [
 				"true", "false"
 			],
@@ -498,7 +498,9 @@
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
-				"displayName": "VirtualNetwork"
+				"displayName": "VirtualNetwork",
+				"provider": "[variables('redHatTags').provider]",
+				"app": "[variables('redHatTags').app]"
 			},
 			"properties": {
 				"addressSpace": {
@@ -1431,11 +1433,11 @@
 		},
 		"Bastion SSH": {
 			"type": "string",
-			"value": "[concat('ssh ', reference(variables('bastionPublicIp')).dnsSettings.fqdn, ' -p 22')]"
+			"value": "[concat('ssh -p 22 ', reference(variables('bastionPublicIp')).dnsSettings.fqdn)]"
 		},
 		"Openshift Master SSH": {
 			"type": "string",
-			"value": "[concat('ssh ', parameters('adminUsername'), '@', reference(variables('openshiftMasterPublicIpDnsLabel')).dnsSettings.fqdn, ' -p 2200')]"
+			"value": "[concat('ssh -p 2200 ', parameters('adminUsername'), '@', reference(variables('openshiftMasterPublicIpDnsLabel')).dnsSettings.fqdn)]"
 		},
 		"Openshift Infra Load Balancer FQDN": {
 			"type": "string",

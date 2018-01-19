@@ -121,11 +121,7 @@
 			"provider": "[variables('redHatTags').provider]",
 			"app": "[variables('redHatTags').app]"
 		},
-		"plan": {
-			"name": "rhel74",
-			"publisher": "redhat",
-			"product": "rhel-byol"			
-		},
+		"plan": "[parameters('plan')]",
 		"properties": {
 			"availabilitySet": {
 				"id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySet'))]"
@@ -147,12 +143,7 @@
 				}
 			},
 			"storageProfile": {
-				"imageReference": {
-					"publisher": "redhat",
-					"offer": "rhel-byol",
-					"sku": "rhel74",
-					"version": "latest"
-				},
+				"imageReference": "[parameters('imageReference')]",
 				"osDisk": {
 					"name": "[concat(parameters('hostname'), 'osdisk')]",
 					"vhd": {
