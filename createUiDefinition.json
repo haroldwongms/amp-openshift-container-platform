@@ -280,7 +280,7 @@
 		"outputs": {
 			"location": "[location()]",
 			"sshPublicKey": "[basics('adminPassword').sshPublicKey]",
-			"nodeInstanceCount": "[steps('infrastructureSettings').nodeInstanceCount]",
+			"nodeInstanceCount": "[int(steps('infrastructureSettings').nodeInstanceCount)]",
 			"nodeVmSize": "[steps('infrastructureSettings').nodeVmSize]",
 			"openshiftClusterPrefix": "[steps('infrastructureSettings').openshiftClusterPrefix]",
 			"adminUsername": "[basics('adminUsername')]",
