@@ -131,40 +131,6 @@
 				"count": "[steps('infrastructureSettings').nodeInstanceCount]",
 				"visible": true
 			}, {
-				"name": "enableCns",
-				"type": "Microsoft.Common.OptionsGroup",
-				"label": "Configure Container Native Storage",
-				"defaultValue": "No",
-				"toolTip": "Build the required CNS nodes and configure OpenShift to support CNS.",
-				"constraints": {
-					"allowedValues": [
-						{
-						"label": "Yes",
-						"value": "true"
-						},
-						{
-						"label": "No",
-						"value": "false"
-						}
-					]
-				},
-				"visible": true
-			}, {
-				"name": "cnsNodeConfig",
-				"type": "Microsoft.Common.OptionsGroup",
-				"label": "CNS Nodes to be created",
-				"defaultValue": "",
-				"toolTip": "For display purposes only",
-				"constraints": {
-					"allowedValues": [
-						{
-						"label": "3 CNS Nodes of size Standard_E4s_v3",
-						"value": "cns"
-						}
-					]
-				},
-				"visible": "[equals(steps('infrastructureSettings').enableCns, 'true')]"
-			}, {
 				"name": "keyVaultResourceGroup",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Key Vault Resource Group Name",
@@ -241,15 +207,6 @@
 				"constraints": {
 					"required": true
 				}
-			}, {
-				"name": "cnsPoolId",
-				"type": "Microsoft.Common.TextBox",
-				"label": "Container Native Storage Pool ID",
-				"toolTip": "The Pool ID that contains Gluster entitlement.",
-				"constraints": {
-					"required": true
-				},
-				"visible": "[equals(steps('infrastructureSettings').enableCns, 'true')]"
 			}, {
 				"name": "enableAzure",
 				"type": "Microsoft.Common.OptionsGroup",
@@ -331,8 +288,6 @@
 			"rhsmUsername": "[steps('openShiftSettings').rhsmUsername]",
 			"rhsmPassword": "[steps('openShiftSettings').rhsmPassword]",
 			"rhsmPoolId": "[steps('openShiftSettings').rhsmPoolId]",
-			"cnsPoolId": "[steps('openShiftSettings').cnsPoolId]",
-			"enableCns": "[steps('infrastructureSettings').enableCns]",
 			"keyVaultResourceGroup": "[steps('infrastructureSettings').keyVaultResourceGroup]",
 			"keyVaultName": "[steps('infrastructureSettings').keyVaultName]",
 			"keyVaultSecret": "[steps('infrastructureSettings').keyVaultSecret]",
