@@ -80,7 +80,7 @@
 						"value": "disk"
 						},
 						{
-						"label": "Total Cores: 6 Ev3, 12 Dv3, 2 DSv2",
+						"label": "Total Cores Required: 6 E2s_v3, 12 D4s_v3, 2 DS2_v2",
 						"value": "cores"
 						}
 					]
@@ -92,7 +92,7 @@
 				"defaultValue": "2",
 				"toolTip": "Select number of Application Nodes to be created in the OpenShift cluster",
 				"constraints": {
-					"regex": "[1-9]",
+					"regex": "^[1-9]$",
 					"required": "true",
 					"validationMessage": "Select a number between one and nine for the number of application nodes. More can be added after the cluster is created."
 				}
@@ -130,6 +130,40 @@
 				},
 				"count": "[steps('infrastructureSettings').nodeInstanceCount]",
 				"visible": true
+			}, {
+				"name": "enableCns",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "Configure Container Native Storage",
+				"defaultValue": "No",
+				"toolTip": "Build the required CNS nodes and configure OpenShift to support CNS.",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "Yes",
+						"value": "true"
+						},
+						{
+						"label": "No",
+						"value": "false"
+						}
+					]
+				},
+				"visible": true
+			}, {
+				"name": "cnsNodeConfig",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "CNS Nodes to be created",
+				"defaultValue": "",
+				"toolTip": "For display purposes only",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "3 CNS Nodes of size Standard_E4s_v3",
+						"value": "cns"
+						}
+					]
+				},
+				"visible": "[equals(steps('infrastructureSettings').enableCns, 'true')]"
 			}, {
 				"name": "keyVaultResourceGroup",
 				"type": "Microsoft.Common.TextBox",
@@ -207,6 +241,15 @@
 				"constraints": {
 					"required": true
 				}
+			}, {
+				"name": "cnsPoolId",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Container Native Storage Pool ID",
+				"toolTip": "The Pool ID that contains Gluster entitlement.",
+				"constraints": {
+					"required": true
+				},
+				"visible": "[equals(steps('infrastructureSettings').enableCns, 'true')]"
 			}, {
 				"name": "enableAzure",
 				"type": "Microsoft.Common.OptionsGroup",
@@ -288,6 +331,8 @@
 			"rhsmUsername": "[steps('openShiftSettings').rhsmUsername]",
 			"rhsmPassword": "[steps('openShiftSettings').rhsmPassword]",
 			"rhsmPoolId": "[steps('openShiftSettings').rhsmPoolId]",
+			"cnsPoolId": "[steps('openShiftSettings').cnsPoolId]",
+			"enableCns": "[steps('infrastructureSettings').enableCns]",
 			"keyVaultResourceGroup": "[steps('infrastructureSettings').keyVaultResourceGroup]",
 			"keyVaultName": "[steps('infrastructureSettings').keyVaultName]",
 			"keyVaultSecret": "[steps('infrastructureSettings').keyVaultSecret]",

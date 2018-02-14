@@ -80,7 +80,7 @@
 						"value": "disk"
 						},
 						{
-						"label": "Total Cores: 6 Ev3, 12 Dv3, 2 DSv2",
+						"label": "Total Cores Required: 6 E2s_v3, 12 D4s_v3, 2 DS2_v2",
 						"value": "cores"
 						}
 					]
@@ -92,7 +92,7 @@
 				"defaultValue": "2",
 				"toolTip": "Select number of Application Nodes to be created in the OpenShift cluster",
 				"constraints": {
-					"regex": "[1-9]",
+					"regex": "^[1-9]$",
 					"required": "true",
 					"validationMessage": "Select a number between one and nine for the number of application nodes. More can be added after the cluster is created."
 				}
