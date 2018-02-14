@@ -323,10 +323,15 @@
 		"infraLbHttpProbeId": "[concat(variables('infraLbId'),'/probes/httpProbe')]",
 		"infraLbHttpsProbeId": "[concat(variables('infraLbId'),'/probes/httpsProbe')]",
 		"imageReference": {
-			"publisher": "RedHat",
-			"offer": "RHEL",
-			"sku": "7-RAW",
+			"publisher": "redhat",
+			"offer": "rhel-ocp-marketplace",
+			"sku": "rhel74",
 			"version": "latest"
+		},
+		"plan": {
+			"publisher": "redhat",
+			"product": "rhel-ocp-marketplace",
+			"name": "rhel74"
 		},
 		"redHatTags": {
 			"app": "OpenShiftMarketplace",
@@ -1311,6 +1316,9 @@
 					"imageReference": {
 						"value": "[variables('imageReference')]"
 					},
+					"plan": {
+						"value": "[variables('plan')]"
+					},
 					"redHatTags": {
 						"value": "[variables('redHatTags')]"
 					}
@@ -1392,6 +1400,9 @@
 					},
 					"imageReference": {
 						"value": "[variables('imageReference')]"
+					},
+					"plan": {
+						"value": "[variables('plan')]"
 					},
 					"redHatTags": {
 						"value": "[variables('redHatTags')]"
@@ -1475,6 +1486,9 @@
 					"imageReference": {
 						"value": "[variables('imageReference')]"
 					},
+					"plan": {
+						"value": "[variables('plan')]"
+					},
 					"redHatTags": {
 						"value": "[variables('redHatTags')]"
 					}
@@ -1556,6 +1570,9 @@
 					},
 					"imageReference": {
 						"value": "[variables('imageReference')]"
+					},
+					"plan": {
+						"value": "[variables('plan')]"
 					},
 					"redHatTags": {
 						"value": "[variables('redHatTags')]"
