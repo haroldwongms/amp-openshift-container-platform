@@ -1,77 +1,28 @@
-{
+﻿{
 	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
 	"contentVersion": "1.0.0.0",
 	"parameters": {
 		"baseUrl": {
 			"type": "string",
 			"metadata": {
-				"description": "Base URL for Template Files",
+				"description": "Base URL for Marketplace Deployment",
 				"artifactsBaseUrl": ""
 			},
 			"defaultValue": "https://raw.githubusercontent.com/Microsoft/openshift-container-platform/master"
-		},
-		"nodeVmSize": {
-			"type": "string",
-			"defaultValue": "Standard_DS2_v2",
-			"allowedValues": [
-				"Standard_A4", "Standard_A5", "Standard_A6", "Standard_A7", "Standard_A8", "Standard_A9", "Standard_A10", "Standard_A11",
-				"Standard_D2", "Standard_D3", "Standard_D4",
-				"Standard_D11", "Standard_D12", "Standard_D13", "Standard_D14",
-				"Standard_D2_v2", "Standard_D3_v2", "Standard_D4_v2", "Standard_D5_v2",
-				"Standard_D11_v2", "Standard_D12_v2", "Standard_D13_v2", "Standard_D14_v2",
-				"Standard_G1", "Standard_G2", "Standard_G3", "Standard_G4", "Standard_G5",
-				"Standard_DS2", "Standard_DS3", "Standard_DS4",
-				"Standard_DS11", "Standard_DS12", "Standard_DS13", "Standard_DS14",
-				"Standard_DS2_v2", "Standard_DS3_v2", "Standard_DS4_v2", "Standard_DS5_v2",
-				"Standard_DS11_v2", "Standard_DS12_v2", "Standard_DS13_v2", "Standard_DS14_v2",
-				"Standard_GS1", "Standard_GS2", "Standard_GS3", "Standard_GS4", "Standard_GS5",
-				"Standard_D2_v3", "Standard_D4_v3", "Standard_D8_v3", "Standard_D16_v3", "Standard_D32_v3", "Standard_D64_v3",
-				"Standard_D2s_v3", "Standard_D4s_v3", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_D32s_v3", "Standard_D64s_v3",
-				"Standard_E2_v3", "Standard_E4_v3", "Standard_E8_v3", "Standard_E16_v3", "Standard_E32_v3", "Standard_E64_v3",
-				"Standard_E2s_v3", "Standard_E4s_v3", "Standard_E8s_v3", "Standard_E16s_v3", "Standard_E32s_v3", "Standard_E64s_v3"
-			],
-			"metadata": {
-				"description": "OpenShift Node VM(s) size"
-			}
-		},
+		},		
 		"location": {
-			"type": "string",
-			"defaultValue": "",
-			"metadata": {
-				"description": "Region in which the resource group and components will be deployed"
-			}
-		},
-		"storageKind": {
-			"type": "string",
-			"defaultValue": "managed",
-			"allowedValues": ["managed", "unmanaged"],
-			"metadata": {
-				"description": "Use Managed or Unmanaged Disks"
-			}
+		  "type": "string",
+		  "metadata": {
+			"description": "Location"
+		  }
 		},
 		"openshiftClusterPrefix": {
 			"type": "string",
 			"defaultValue": "mycluster",
-			"minLength": 4,
+			"minLength": 1,
 			"maxLength": 20,
 			"metadata": {
 				"description": "OpenShift cluster prefix.  Used to generate master, infra and node hostnames.  Maximum of 20 characters."
-			}
-		},
-		"nodeInstanceCount": {
-			"type": "string",
-			"defaultValue": 2,
-			"allowedValues": [1, 2, 3, 4, 5, 6, 7, 8, 9],
-			"metadata": {
-				"description": "Number of OpenShift nodes"
-			}
-		},
-		"dataDiskSize": {
-			"type": "int",
-			"defaultValue": 128,
-			"allowedValues": [32, 64, 128, 256, 512, 1024, 2048],
-			"metadata": {
-				"description": "Size of Datadisk in GB for Docker volume"
 			}
 		},
 		"adminUsername": {
@@ -82,41 +33,32 @@
 				"description": "Administrator username on all VMs and first user created for OpenShift login"
 			}
 		},
+		"clusterSize": {
+			"type": "string",
+			"defaultValue": "medium",
+			"allowedValues": [
+				"small", "medium", "large"
+			],
+			"minLength": 1,
+			"metadata": {
+				"description": "Administrator username on all VMs and first user created for OpenShift login"
+			}		
+		},
 		"openshiftPassword": {
 			"type": "securestring",
-			"minLength": 5,
+			"minLength": 1,
 			"metadata": {
 				"description": "Password for OpenShift user to login to OpenShift Console"
 			}
 		},
-		"enableMetrics": {
-			"type": "string",
-			"defaultValue": "true",
-			"allowedValues": [
-				"true", "false"
-			],
-			"metadata": {
-				"description": "Enable OpenShift Metrics: true or false"
-			}
-		},
-		"enableLogging": {
-			"type": "string",
-			"defaultValue": "true",
-			"allowedValues": [
-				"true", "false"
-			],
-			"metadata": {
-				"description": "Enable OpenShift Logging: true or false"
-			}
-		},
-		"rhsmUsernameOrOrgId": {
+		"rhsmUsername": {
 			"type": "string",
 			"minLength": 1,
 			"metadata": {
-				"description": "Red Hat Subscription Manager Username or Organization ID. To find your Organization ID, run on registered server: subscription-manager identity"
+				"description": "Red Hat Subscription Manager Username or Organization ID. If usernamepassword selected in previous input, then use Username; otherwise entier Organization ID. To find your Organization ID, run on registered server: subscription-manager identity"
 			}
 		},
-		"rhsmPasswordOrActivationKey": {
+		"rhsmPassword": {
 			"type": "securestring",
 			"minLength": 1,
 			"metadata": {
@@ -159,7 +101,7 @@
 		},
 		"enableAzure": {
 			"type": "string",
-			"defaultValue": "true",
+			"defaultValue": "false",
 			"allowedValues": [
 				"true", "false"
 			],
@@ -169,6 +111,8 @@
 		},
 		"aadClientId": {
 			"type": "string",
+			"minLength": 1,
+			"defaultValue": "changeme",
 			"metadata": {
 				"description": "Azure AD Client ID"
 			}
@@ -176,6 +120,7 @@
 		"aadClientSecret": {
 			"type": "securestring",
 			"minLength": 1,
+			"defaultValue": "changeme",
 			"metadata": {
 				"description": "Azure AD Client Secret"
 			}
@@ -199,12 +144,6 @@
 		}
 	},
 	"variables": {
-		"masterVmSize": "Standard_E2s_v3",
-		"infraVmSize": "Standard_D4s_v3",
-		"masterInstanceCount": 3,
-		"infraInstanceCount": 3,
-		"nodeInstanceCount": "[int(parameters('nodeInstanceCount'))]",
-		"storageKind": "managed",
 		"resourceGroupName": "[resourceGroup().id]",
 		"apiVersionCompute": "2017-03-30",
 		"apiVersionNetwork": "2017-09-01",
@@ -219,102 +158,32 @@
 		"newStorageAccountBastion": "[concat('bastion', uniqueString(concat(resourceGroup().id, 'bsa')))]",
 		"newStorageAccountMaster": "[concat('master', uniqueString(concat(resourceGroup().id, 'msa')))]",
 		"newStorageAccountInfra": "[concat('infra', uniqueString(concat(resourceGroup().id, 'isa')))]",
-		"newStorageAccountNodeOs": "[concat('nodeos', uniqueString(concat(resourceGroup().id, 'nodeossa')))]",
-		"newStorageAccountNodeData": "[concat('nodedata', uniqueString(concat(resourceGroup().id, 'nodedatasa')))]",
-		"diagStorageAccount1": "[concat('diag1', uniqueString(concat(resourceGroup().id, 'dsa1')))]",
-		"diagStorageAccount2": "[concat('diag2', uniqueString(concat(resourceGroup().id, 'dsa2')))]",
+		"newStorageAccountNode": "[concat('nodeos', uniqueString(concat(resourceGroup().id, 'nsa')))]",
+		"diagStorageAccount": "[concat('diag', uniqueString(concat(resourceGroup().id, 'dsa')))]",
 		"newStorageAccountRegistry": "[concat('registry', uniqueString(concat(resourceGroup().id, 'registry')))]",
 		"newStorageAccountPersistentVolume1": "[concat('pv1sa', uniqueString(concat(resourceGroup().id, 'persistentvolume1')))]",
-		"newStorageAccountArray": [
-			{ "name": "[variables('diagStorageAccount1')]", "tagName": "DiagnosticsStorageAccount", "skuName": "[variables('storageSkuObject').diagnostics.skuName]", "skuTier": "[variables('storageSkuObject').diagnostics.skuTier]" },
-			{ "name": "[variables('diagStorageAccount2')]", "tagName": "DiagnosticsStorageAccount", "skuName": "[variables('storageSkuObject').diagnostics.skuName]", "skuTier": "[variables('storageSkuObject').diagnostics.skuTier]" },
-			{ "name": "[variables('newStorageAccountRegistry')]", "tagName": "RegistryStorageAccount", "skuName": "[variables('storageSkuObject').registry.skuName]", "skuTier": "[variables('storageSkuObject').registry.skuTier]" },
-			{ "name": "[variables('newStorageAccountBastion')]", "tagName": "BastionStorageAccount", "skuName": "[variables('storageSkuObject').bastion.skuName]", "skuTier": "[variables('storageSkuObject').bastion.skuTier]" },
-			{ "name": "[variables('newStorageAccountMaster')]", "tagName": "MasterStorageAccount", "skuName": "[variables('storageSkuObject').master.skuName]", "skuTier": "[variables('storageSkuObject').master.skuTier]" },
-			{ "name": "[variables('newStorageAccountInfra')]", "tagName": "InfraStorageAccount", "skuName": "[variables('storageSkuObject').infra.skuName]", "skuTier": "[variables('storageSkuObject').infra.skuTier]" },
-			{ "name": "[variables('newStorageAccountNodeOs')]", "tagName": "NodeStorageAccount", "skuName": "[variables('storageSkuObject').node.skuName]", "skuTier": "[variables('storageSkuObject').node.skuTier]" },
-			{ "name": "[variables('newStorageAccountNodeData')]", "tagName": "NodeStorageAccount", "skuName": "[variables('storageSkuObject').node.skuName]", "skuTier": "[variables('storageSkuObject').node.skuTier]" },
-			{ "name": "[variables('newStorageAccountPersistentVolume1')]", "tagName": "PersistentVolume1StorageAccount", "skuName": "[variables('storageSkuObject').persistent.skuName]", "skuTier": "[variables('storageSkuObject').persistent.skuTier]" }
-		],
-		"availabilitySetArray": [
-			{ "name": "masteravailabilityset", "tagName": "MasterAvailabilitySet" },
-			{ "name": "infraavailabilityset", "tagName": "InfraAvailabilitySet" },
-			{ "name": "nodeavailabilityset", "tagName": "NodeAvailabilitySet" }
-		],
-		"unmanagedAvailabilitySetSku": "Classic",
-		"managedAvailabilitySetSku": "Aligned",
-		"availabilitySetSku": "[concat(parameters('storageKind'), 'AvailabilitySetSku')]",
-		"unmanagedPlatformFaultDomainCount": 3,
-		"managedPlatformFaultDomainCount": 2,
-		"platformFaultDomainCount": "[concat(parameters('storageKind'), 'PlatformFaultDomainCount')]",
-		"storageSkuObject": {
-			"bastion": {
-				"skuName": "[variables('vmSizesMap')[variables('bastionVmSize')].storageAccountType]",
-				"skuTier": "[variables('vmSizesMap')[variables('bastionVmSize')].storageAccountTier]"
-			},
-			"master": {
-				"skuName": "[variables('vmSizesMap')[variables('masterVmSize')].storageAccountType]",
-				"skuTier": "[variables('vmSizesMap')[variables('masterVmSize')].storageAccountTier]"
-			},
-			"infra": {
-				"skuName": "[variables('vmSizesMap')[variables('infraVmSize')].storageAccountType]",
-				"skuTier": "[variables('vmSizesMap')[variables('infraVmSize')].storageAccountTier]"
-			},
-			"node": {
-				"skuName": "[variables('vmSizesMap')[parameters('nodeVmSize')].storageAccountType]",
-				"skuTier": "[variables('vmSizesMap')[parameters('nodeVmSize')].storageAccountTier]"
-			},
-			"diagnostics": {
-				"skuName": "Standard_LRS",
-				"skuTier": "Standard"
-			},
-			"registry": {
-				"skuName": "Standard_LRS",
-				"skuTier": "Standard"
-			},
-			"persistent": {
-				"skuName": "Standard_LRS",
-				"skuTier": "Standard"
-			}
-		},
-		"managedStorageCount": 3,
-		"unmanagedStorageCount": "[length(variables('newStorageAccountArray'))]",
-		"storageLoopCount": "[concat(parameters('storageKind'), 'StorageCount')]",
-		"unmanagedBastionUri": "[variables('newStorageAccountBastion')]",
-		"managedBastionUri": "[variables('diagStorageAccount1')]",
-		"unmanagedMasterUri": "[variables('newStorageAccountMaster')]",
-		"managedMasterUri": "[variables('diagStorageAccount1')]",
-		"unmanagedInfraUri": "[variables('newStorageAccountInfra')]",
-		"managedInfraUri": "[variables('diagStorageAccount1')]",
-		"unmanagedNodeOsUri": "[variables('newStorageAccountNodeOs')]",
-		"managedNodeOsUri": "[variables('diagStorageAccount1')]",
-		"unmanagedNodeDataUri": "[variables('newStorageAccountNodeData')]",
-		"managedNodeDataUri": "[variables('diagStorageAccount1')]",
-		"bastionUri": "[concat(parameters('storageKind'), 'BastionUri')]",
-		"masterUri": "[concat(parameters('storageKind'), 'MasterUri')]",
-		"infraUri": "[concat(parameters('storageKind'), 'InfraUri')]",
-		"nodeOsUri": "[concat(parameters('storageKind'), 'NodeOsUri')]",
-		"nodeDataUri": "[concat(parameters('storageKind'), 'NodeDataUri')]",
 		"addressPrefix": "10.0.0.0/8",
 		"masterSubnetPrefix": "10.1.0.0/16",
 		"nodeSubnetPrefix": "10.2.0.0/16",
 		"virtualNetworkName": "openshiftvnet",
 		"masterSubnetName": "mastersubnet",
 		"nodeSubnetName": "nodesubnet",
-		"bastionPublicIp": "bastionpublicip",
-		"bastionPublicIpDnsLabel": "[concat('bastiondns', uniqueString(resourceGroup().id))]",
 		"infraLbPublicIpDnsLabel": "[concat('infradns', uniqueString(concat(resourceGroup().id, 'infra')))]",
 		"openshiftMasterPublicIpDnsLabel": "[concat('masterdns', uniqueString(concat(resourceGroup().id, 'master')))]",
+		"bastionPublicIp": "bastionpublicip",
+		"bastionPublicIpDnsLabel": "[concat('bastiondns', uniqueString(resourceGroup().id))]",
 		"persistentVolume1Type": "Standard_LRS",
-
+		"persistentVolume1Tier": "Standard",
+		
 		"masterLoadBalancerName": "[concat(variables('openshiftMasterHostname'), 'lb')]",
 		"masterPublicIpAddressId": "[resourceId('Microsoft.Network/publicIPAddresses', variables('openshiftMasterPublicIpDnsLabel'))]",
 		"masterLbId": "[resourceId('Microsoft.Network/loadBalancers', variables('masterLoadBalancerName'))]",
 		"masterLbFrontEndConfigId": "[concat(variables('masterLbId'), '/frontendIPConfigurations/loadBalancerFrontEnd')]",
 		"masterLbBackendPoolId": "[concat(variables('masterLbId'),'/backendAddressPools/loadBalancerBackend')]",
 		"masterLbHttpProbeId": "[concat(variables('masterLbId'),'/probes/httpProbe')]",
-		"masterLb443ProbeId": "[concat(variables('masterLbId'),'/probes/443Probe')]",
-
+		"masterLb8443ProbeId": "[concat(variables('masterLbId'),'/probes/8443Probe')]",
+		"masterLbCockpitProbeId": "[concat(variables('masterLbId'),'/probes/cockpitProbe')]",
+		
 		"infraLoadBalancerName": "[concat(variables('openshiftInfraHostname'), 'lb')]",
 		"infraPublicIpAddressId": "[resourceId('Microsoft.Network/publicIPAddresses', variables('infraLbPublicIpDnsLabel'))]",
 		"infraLbId": "[resourceId('Microsoft.Network/loadBalancers', variables('infraLoadBalancerName'))]",
@@ -322,341 +191,70 @@
 		"infraLbBackendPoolId": "[concat(variables('infraLbId'),'/backendAddressPools/loadBalancerBackend')]",
 		"infraLbHttpProbeId": "[concat(variables('infraLbId'),'/probes/httpProbe')]",
 		"infraLbHttpsProbeId": "[concat(variables('infraLbId'),'/probes/httpsProbe')]",
-		"imageReference": {
-			"publisher": "RedHat",
-			"offer": "RHEL",
-			"sku": "7-RAW",
-			"version": "latest"
-		},
+		"infraLbCockpitProbeId": "[concat(variables('infraLbId'),'/probes/cockpitProbe')]",
 		"redHatTags": {
-			"app": "OpenShiftMarketplace",
+			"app": "OpenShift",
 			"provider": "9d2c71fc-96ba-4b4a-93b3-14def5bc96fc"
 		},
 		"bastionVmSize": "Standard_DS2_v2",
+		"masterVmSize": "[variables('clusterSizeMap')[parameters('clusterSize')].masterVmSize]",
+		"masterInstanceCount": "[variables('clusterSizeMap')[parameters('clusterSize')].masterVmCount]",
+		"infraVmSize": "[variables('clusterSizeMap')[parameters('clusterSize')].infraVmSize]",
+		"infraInstanceCount": "[variables('clusterSizeMap')[parameters('clusterSize')].infraVmCount]",
+		"nodeVmSize": "[variables('clusterSizeMap')[parameters('clusterSize')].nodeVmSize]",
+		"nodeInstanceCount": "[variables('clusterSizeMap')[parameters('clusterSize')].nodeVmCount]",
+		"dataDiskSize": "[variables('clusterSizeMap')[parameters('clusterSize')].dataDiskSize]",
+		"clusterSizeMap": {
+			"small": {
+				"masterVmSize": "Standard_DS2_v2",
+				"masterVmCount": 1,
+				"infraVmSize": "Standard_DS2_v2",
+				"infraVmCount": 1,
+				"nodeVmSize": "Standard_DS2_v2",
+				"nodeVmCount": 2,
+				"dataDiskSize": 128
+			},
+			"medium": {
+				"masterVmSize": "Standard_DS3_v2",
+				"masterVmCount": 3,
+				"infraVmSize": "Standard_DS3_v2",
+				"infraVmCount": 2,
+				"nodeVmSize": "Standard_DS3_v2",
+				"nodeVmCount": 4,
+				"dataDiskSize": 256
+			},
+			"large": {
+				"masterVmSize": "Standard_DS3_v2",
+				"masterVmCount": 3,
+				"infraVmSize": "Standard_DS3_v2",
+				"infraVmCount": 2,
+				"nodeVmSize": "Standard_DS4_v2",
+				"nodeVmCount": 6,
+				"dataDiskSize": 512
+			}
+		},
+		"osType": {
+			"publisher": "redhat",
+			"offer": "rhel-byol",
+			"sku": "rhel74",
+			"version": "latest"
+		},
+		"plan": {
+			"publisher": "redhat",
+			"product": "rhel-byol",
+			"name": "rhel74"
+		},
 		"singlequote": "'",
 		"sshKeyPath": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
 		"bastionPrepScriptUrl": "[concat(parameters('baseUrl'), '/scripts/bastionPrep.sh')]",
 		"nodePrepScriptUrl": "[concat(parameters('baseUrl'), '/scripts/nodePrep.sh')]",
 		"masterPrepScriptUrl": "[concat(parameters('baseUrl'), '/scripts/masterPrep.sh')]",
-		"openshiftDeploymentScriptUrl": "[concat(parameters('baseUrl'), '/scripts/deployOpenShift.sh')]",
 		"bastionPrepScriptFileName": "bastionPrep.sh",
 		"nodePrepScriptFileName": "nodePrep.sh",
 		"masterPrepScriptFileName": "masterPrep.sh",
-		"openshiftDeploymentScriptFileName": "deployOpenShift.sh",
 		"clusterNodeDeploymentTemplateUrl": "[concat(parameters('baseUrl'), '/nested/galleryclusternode.json')]",
 		"basicDeploymentTemplateUrl": "[concat(parameters('baseUrl'), '/nested/gallerybasic.json')]",
-		"openshiftDeploymentTemplateUrl": "[concat(parameters('baseUrl'), '/nested/openshiftdeploy.json')]",
-		"bastionPrepTemplateUrl": "[concat(parameters('baseUrl'), '/nested/bastionprep.json')]",
-		"vmSizesMap": {
-			"Standard_A4": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_A5": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_A6": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_A7": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_A8": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_A9": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_A10": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_A11": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D1": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D2": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D4": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D11": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D12": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D13": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D14": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D1_v2": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D2_v2": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D3_v2": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D4_v2": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D5_v2": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D11_v2": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D12_v2": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D13_v2": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D14_v2": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_G1": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_G2": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_G3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_G4": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_G5": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_DS1": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS2": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS4": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS11": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS12": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS13": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS14": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS1_v2": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS2_v2": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS3_v2": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS4_v2": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS5_v2": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS11_v2": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS12_v2": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS13_v2": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS14_v2": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_DS15_v2": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_GS1": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_GS2": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_GS3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_GS4": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_GS5": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_D2_v3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D4_v3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D8_v3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D16_v3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D32_v3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D64_v3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_D2s_v3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_D4s_v3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_D8s_v3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_D16s_v3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_D32s_v3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_D64s_v3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_E2_v3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_E4_v3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_E8_v3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_E16_v3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_E32_v3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_E64_v3": {
-				"storageAccountType": "Standard_LRS",
-				"storageAccountTier": "Standard"
-			},
-			"Standard_E2s_v3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_E4s_v3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_E8s_v3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_E16s_v3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_E32s_v3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			},
-			"Standard_E64s_v3": {
-				"storageAccountType": "Premium_LRS",
-				"storageAccountTier": "Premium"
-			}
-		}
+		"openshiftDeploymentTemplateUrl": "[concat(parameters('baseUrl'), '/nested/openshiftdeploy.json')]"
 	},
 	"resources": [
 		{
@@ -728,11 +326,24 @@
 						"description": "Allow OpenShift Console connections from all locations",
 						"protocol": "Tcp",
 						"sourcePortRange": "*",
-						"destinationPortRange": "443",
+						"destinationPortRange": "8443",
 						"sourceAddressPrefix": "*",
 						"destinationAddressPrefix": "*",
 						"access": "Allow",
 						"priority": 300,
+						"direction": "Inbound"
+					}
+				}, {
+					"name": "allowCockpitIn_all",
+					"properties": {
+						"description": "Allow Cockpit connections from all locations",
+						"protocol": "Tcp",
+						"sourcePortRange": "*",
+						"destinationPortRange": "9090",
+						"sourceAddressPrefix": "*",
+						"destinationAddressPrefix": "*",
+						"access": "Allow",
+						"priority": 400,
 						"direction": "Inbound"
 					}
 				}]
@@ -787,6 +398,19 @@
 						"priority": 300,
 						"direction": "Inbound"
 					}
+				}, {
+					"name": "allowCockpitIn_all",
+					"properties": {
+						"description": "Allow Cockpit connections from all locations",
+						"protocol": "Tcp",
+						"sourcePortRange": "*",
+						"destinationPortRange": "9090",
+						"sourceAddressPrefix": "*",
+						"destinationAddressPrefix": "*",
+						"access": "Allow",
+						"priority": 400,
+						"direction": "Inbound"
+					}
 				}]
 			}
 		}, {
@@ -839,18 +463,29 @@
 						"priority": 300,
 						"direction": "Inbound"
 					}
+				}, {
+					"name": "allowCockpitIn_all",
+					"properties": {
+						"description": "Allow Cockpit connections from all locations",
+						"protocol": "Tcp",
+						"sourcePortRange": "*",
+						"destinationPortRange": "9090",
+						"sourceAddressPrefix": "*",
+						"destinationAddressPrefix": "*",
+						"access": "Allow",
+						"priority": 400,
+						"direction": "Inbound"
+					}
 				}]
 			}
 		}, {
 			"type": "Microsoft.Network/virtualNetworks",
 			"name": "[variables('virtualNetworkName')]",
 			"location": "[parameters('location')]",
-			"tags": {
-				"displayName": "VirtualNetwork",
-				"provider": "[variables('redHatTags').provider]",
-				"app": "[variables('redHatTags').app]"
-			},
 			"apiVersion": "[variables('apiVersionNetwork')]",
+			"tags": {
+				"displayName": "VirtualNetwork"
+			},
 			"properties": {
 				"addressSpace": {
 					"addressPrefixes": [
@@ -871,22 +506,108 @@
 			}
 		}, {
 			"type": "Microsoft.Storage/storageAccounts",
-			"name": "[variables('newStorageAccountArray')[copyIndex()].name]",
+			"name": "[variables('newStorageAccountBastion')]",
 			"location": "[parameters('location')]",
 			"kind": "Storage",
 			"apiVersion": "[variables('apiVersionStorage')]",
 			"tags": {
-				"displayName": "[variables('newStorageAccountArray')[copyIndex()].tagName]",
+				"displayName": "BastionStorageAccount",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
-			"copy": {
-				"name": "storageLoop",
-				"count": "[variables(variables('storageLoopCount'))]"
+			"sku": {
+				"name": "Premium_LRS",
+				"tier": "Premium"
+			}
+		}, {
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[variables('newStorageAccountMaster')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
+			"apiVersion": "[variables('apiVersionStorage')]",
+			"tags": {
+				"displayName": "MasterStorageAccount",
+				"provider": "[variables('redHatTags').provider]",
+				"app": "[variables('redHatTags').app]"
 			},
 			"sku": {
-				"name": "[variables('newStorageAccountArray')[copyIndex()].skuName]",
-				"tier": "[variables('newStorageAccountArray')[copyIndex()].skuTier]"
+				"name": "Premium_LRS",
+				"tier": "Premium"
+			}
+		}, {
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[variables('newStorageAccountInfra')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
+			"apiVersion": "[variables('apiVersionStorage')]",
+			"tags": {
+				"displayName": "InfraStorageAccount",
+				"provider": "[variables('redHatTags').provider]",
+				"app": "[variables('redHatTags').app]"
+			},
+			"sku": {
+				"name": "Premium_LRS",
+				"tier": "Premium"
+			}
+		}, {
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[variables('newStorageAccountNode')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
+			"apiVersion": "[variables('apiVersionStorage')]",
+			"tags": {
+				"displayName": "NodeStorageAccount",
+				"provider": "[variables('redHatTags').provider]",
+				"app": "[variables('redHatTags').app]"
+			},
+			"sku": {
+				"name": "Premium_LRS",
+				"tier": "Premium"
+			}
+		}, {
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[variables('diagStorageAccount')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
+			"apiVersion": "[variables('apiVersionStorage')]",
+			"tags": {
+				"displayName": "DiagnosticsStorageAccount",
+				"provider": "[variables('redHatTags').provider]",
+				"app": "[variables('redHatTags').app]"
+			},
+			"sku": {
+				"name": "Standard_LRS",
+				"tier": "Standard"
+			}
+		}, {
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[variables('newStorageAccountRegistry')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
+			"apiVersion": "[variables('apiVersionStorage')]",
+			"tags": {
+				"displayName": "RegistryStorageAccount",
+				"provider": "[variables('redHatTags').provider]",
+				"app": "[variables('redHatTags').app]"
+			},
+			"sku": {
+				"name": "Standard_LRS",
+				"tier": "Standard"
+			}
+		}, {
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[variables('newStorageAccountPersistentVolume1')]",
+			"location": "[parameters('location')]",
+			"kind": "Storage",
+			"apiVersion": "[variables('apiVersionStorage')]",
+			"tags": {
+				"displayName": "PersistentVolume1StorageAccount",
+				"provider": "[variables('redHatTags').provider]",
+				"app": "[variables('redHatTags').app]"
+			},
+			"sku": {
+				"name": "[variables('persistentVolume1Type')]",
+				"tier": "[variables('persistentVolume1Tier')]"
 			}
 		}, {
 			"type": "Microsoft.Network/publicIPAddresses",
@@ -894,7 +615,7 @@
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
-				"displayName": "OpenShiftBastionPublicIP",
+				"displayName": "BastionPublicIP",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
@@ -910,7 +631,7 @@
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
-				"displayName": "OpenShiftInfraLBPublicIP",
+				"displayName": "InfraLBPublicIP",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
@@ -926,7 +647,7 @@
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
-				"displayName": "OpenShiftMasterPublicIP",
+				"displayName": "MasterPublicIP",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
@@ -938,24 +659,33 @@
 			}
 		}, {
 			"type": "Microsoft.Compute/availabilitySets",
-			"name": "[variables('availabilitySetArray')[copyIndex()].name]",
+			"name": "masteravailabilityset",
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionCompute')]",
-            "sku": {
-				"name": "[variables(variables('availabilitySetSku'))]"
-			},
-			"properties": {
-				"platformFaultDomainCount": "[variables(variables('platformFaultDomainCount'))]",
-                "platformUpdateDomainCount": "5"
-			},
 			"tags": {
-				"displayName": "[variables('availabilitySetArray')[copyIndex()].tagName]",
+				"displayName": "MasterAvailabilitySet",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
-			},
-			"copy": {
-				"name": "availabiltySetLoop",
-				"count": "[length(variables('availabilitySetArray'))]"
+			}
+		}, {
+			"type": "Microsoft.Compute/availabilitySets",
+			"name": "infraavailabilityset",
+			"location": "[parameters('location')]",
+			"apiVersion": "[variables('apiVersionCompute')]",
+			"tags": {
+				"displayName": "InfraAvailabilitySet",
+				"provider": "[variables('redHatTags').provider]",
+				"app": "[variables('redHatTags').app]"
+			}
+		}, {
+			"type": "Microsoft.Compute/availabilitySets",
+			"name": "nodeavailabilityset",
+			"location": "[parameters('location')]",
+			"apiVersion": "[variables('apiVersionCompute')]",
+			"tags": {
+				"displayName": "NodeAvailabilitySet",
+				"provider": "[variables('redHatTags').provider]",
+				"app": "[variables('redHatTags').app]"
 			}
 		}, {
 			"type": "Microsoft.Network/loadBalancers",
@@ -963,7 +693,7 @@
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
-				"displayName": "OpenShiftMasterLB",
+				"displayName": "MasterLB",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
@@ -994,24 +724,50 @@
 						"protocol": "Tcp",
 						"loadDistribution": "SourceIP",
 						"idleTimeoutInMinutes": 30,
-						"frontendPort": 443,
-						"backendPort": 443,
+						"frontendPort": 8443,
+						"backendPort": 8443,
 						"probe": {
-							"id": "[variables('masterLb443ProbeId')]"
+							"id": "[variables('masterLb8443ProbeId')]"
+						}
+					}
+				}, {
+					"name": "CockpitConsole",
+					"properties": {
+						"frontendIPConfiguration": {
+							"id": "[variables('masterLbFrontEndConfigId')]"
+						},
+						"backendAddressPool": {
+							"id": "[variables('masterLbBackendPoolId')]"
+						},
+						"protocol": "Tcp",
+						"loadDistribution": "SourceIP",
+						"idleTimeoutInMinutes": 30,
+						"frontendPort": 9090,
+						"backendPort": 9090,
+						"probe": {
+							"id": "[variables('masterLbCockpitProbeId')]"
 						}
 					}
 				}],
 				"probes": [{
-					"name": "443Probe",
+					"name": "8443Probe",
 					"properties": {
 						"protocol": "Tcp",
-						"port": 443,
+						"port": 8443,
+						"intervalInSeconds": 5,
+						"numberOfProbes": 2
+					}
+				}, {
+					"name": "cockpitProbe",
+					"properties": {
+						"protocol": "Tcp",
+						"port": 9090,
 						"intervalInSeconds": 5,
 						"numberOfProbes": 2
 					}
 				}]
 			}
-		},
+		},	
 		{
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"type": "Microsoft.Network/loadBalancers/inboundNatRules",
@@ -1019,7 +775,9 @@
 			"location": "[parameters('location')]",
 			"copy": {
 				"name": "masterLbLoop",
-				"count": "[variables('masterInstanceCount')]"
+				"count": "[variables('masterInstanceCount')]",
+				"mode": "serial",
+				"batchSize": 1
 			},
 			"dependsOn": [
 				"[variables('masterLbId')]"
@@ -1033,14 +791,14 @@
 				"backendPort": 22,
 				"enableFloatingIP": false
 			}
-		},
+		},		
 		{
 			"type": "Microsoft.Network/loadBalancers",
 			"name": "[variables('infraLoadBalancerName')]",
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
-				"displayName": "OpenShiftInfraLB",
+				"displayName": "InfraLB",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
@@ -1091,6 +849,22 @@
 							"id": "[variables('infraLbHttpsProbeId')]"
 						}
 					}
+				}, {
+					"name": "CockpitConsole",
+					"properties": {
+						"frontendIPConfiguration": {
+							"id": "[variables('infraLbFrontEndConfigId')]"
+						},
+						"backendAddressPool": {
+							"id": "[variables('infraLbBackendPoolId')]"
+						},
+						"protocol": "Tcp",
+						"frontendPort": 9090,
+						"backendPort": 9090,
+						"probe": {
+							"id": "[variables('infraLbCockpitProbeId')]"
+						}
+					}
 				}],
 				"probes": [{
 					"name": "httpProbe",
@@ -1108,6 +882,14 @@
 						"intervalInSeconds": 5,
 						"numberOfProbes": 2
 					}
+				}, {
+					"name": "cockpitProbe",
+					"properties": {
+						"protocol": "Tcp",
+						"port": 9090,
+						"intervalInSeconds": 5,
+						"numberOfProbes": 2
+					}
 				}]
 			}
 		}, {
@@ -1116,7 +898,7 @@
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
-				"displayName": "OpenShiftBastionNetworkInterface",
+				"displayName": "BastionNetworkInterface",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
@@ -1147,7 +929,7 @@
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
-				"displayName": "OpenShiftMasterNetworkInterface",
+				"displayName": "MasterNetworkInterface",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
@@ -1189,7 +971,7 @@
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
-				"displayName": "OpenShiftInfraNetworkInterfaces",
+				"displayName": "InfraNetworkInterface",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
@@ -1225,7 +1007,7 @@
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
-				"displayName": "OpenShiftNodeNetworkInterfaces",
+				"displayName": "NodeNetworkInterface",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
@@ -1235,7 +1017,7 @@
 			],
 			"copy": {
 				"name": "nodeNicLoop",
-				"count": "[parameters('nodeInstanceCount')]"
+				"count": "[variables('nodeInstanceCount')]"
 			},
 			"properties": {
 				"ipConfigurations": [{
@@ -1256,7 +1038,8 @@
 			"type": "Microsoft.Resources/deployments",
 			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"dependsOn": [
-				"[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccount1'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('newStorageAccountBastion'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccount'))]",
 				"[concat('Microsoft.Network/networkInterfaces/', variables('openshiftBastionHostname'), '-nic')]"
 			],
 			"properties": {
@@ -1281,38 +1064,23 @@
 					"vmSize": {
 						"value": "[variables('bastionVmSize')]"
 					},
-					"hostName": {
+					"hostname": {
 						"value": "[variables('openshiftBastionHostname')]"
-					},
-					"unmanagedOsDiskUri": {
-						"value": "[reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables(variables('bastionUri'))), variables('apiVersionStorage')).primaryEndpoints['blob']]"
 					},
 					"role": {
 						"value": "bastionnode"
-					},
-					"vmStorageType": {
-						"value": "[variables('vmSizesMap')[variables('bastionVmSize')].storageAccountType]"
-					},
-					"storageKind": {
-						"value": "[parameters('storageKind')]"
 					},
 					"newStorageAccount": {
 						"value": "[variables('newStorageAccountBastion')]"
 					},
 					"diagStorageAccount": {
-						"value": "[variables('diagStorageAccount1')]"
+						"value": "[variables('diagStorageAccount')]"
 					},
 					"apiVersionStorage": {
 						"value": "[variables('apiVersionStorage')]"
 					},
 					"apiVersionCompute": {
 						"value": "[variables('apiVersionCompute')]"
-					},
-					"imageReference": {
-						"value": "[variables('imageReference')]"
-					},
-					"redHatTags": {
-						"value": "[variables('redHatTags')]"
 					}
 				}
 			}
@@ -1321,7 +1089,8 @@
 			"type": "Microsoft.Resources/deployments",
 			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"dependsOn": [
-				"[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccount1'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('newStorageAccountMaster'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccount'))]",
 				"masterNicLoop",
 				"masteravailabilityset"
 			],
@@ -1346,55 +1115,34 @@
 						"value": "[parameters('sshPublicKey')]"
 					},
 					"dataDiskSize": {
-						"value": "[parameters('dataDiskSize')]"
+						"value": "[variables('dataDiskSize')]"
 					},
 					"adminUsername": {
 						"value": "[parameters('adminUsername')]"
 					},
 					"vmSize": {
-						"value": "[parameters('masterVmSize')]"
+						"value": "[variables('masterVmSize')]"
 					},
 					"availabilitySet": {
 						"value": "masteravailabilityset"
 					},
-					"hostName": {
+					"hostname": {
 						"value": "[concat(variables('openshiftMasterHostname'), '-', copyIndex())]"
-					},
-					"unmanagedOsDiskUri": {
-						"value": "[reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables(variables('masterUri'))), variables('apiVersionStorage')).primaryEndpoints['blob']]"
-					},
-					"unmanagedDataDiskUri": {
-						"value": "[reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables(variables('masterUri'))), variables('apiVersionStorage')).primaryEndpoints['blob']]"
 					},
 					"role": {
 						"value": "masternode"
 					},
-					"vmStorageType": {
-						"value": "[variables('vmSizesMap')[parameters('masterVmSize')].storageAccountType]"
-					},
-					"storageKind": {
-						"value": "[parameters('storageKind')]"
-					},
-					"newStorageAccountOs": {
-						"value": "[variables('newStorageAccountMaster')]"
-					},
-					"newStorageAccountData": {
+					"newStorageAccount": {
 						"value": "[variables('newStorageAccountMaster')]"
 					},
 					"diagStorageAccount": {
-						"value": "[variables('diagStorageAccount1')]"
+						"value": "[variables('diagStorageAccount')]"
 					},
 					"apiVersionStorage": {
 						"value": "[variables('apiVersionStorage')]"
 					},
 					"apiVersionCompute": {
 						"value": "[variables('apiVersionCompute')]"
-					},
-					"imageReference": {
-						"value": "[variables('imageReference')]"
-					},
-					"redHatTags": {
-						"value": "[variables('redHatTags')]"
 					}
 				}
 			}
@@ -1403,7 +1151,8 @@
 			"type": "Microsoft.Resources/deployments",
 			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"dependsOn": [
-				"[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccount1'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('newStorageAccountInfra'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccount'))]",
 				"infraNicLoop",
 				"infraavailabilityset"
 			],
@@ -1428,55 +1177,34 @@
 						"value": "[parameters('sshPublicKey')]"
 					},
 					"dataDiskSize": {
-						"value": "[parameters('dataDiskSize')]"
+						"value": "[variables('dataDiskSize')]"
 					},
 					"adminUsername": {
 						"value": "[parameters('adminUsername')]"
 					},
 					"vmSize": {
-						"value": "[parameters('infraVmSize')]"
+						"value": "[variables('infraVmSize')]"
 					},
 					"availabilitySet": {
 						"value": "infraavailabilityset"
 					},
-					"hostName": {
+					"hostname": {
 						"value": "[concat(variables('openshiftInfraHostname'), '-', copyIndex())]"
-					},
-					"unmanagedOsDiskUri": {
-						"value": "[reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables(variables('infraUri'))), variables('apiVersionStorage')).primaryEndpoints['blob']]"
-					},
-					"unmanagedDataDiskUri": {
-						"value": "[reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables(variables('infraUri'))), variables('apiVersionStorage')).primaryEndpoints['blob']]"
 					},
 					"role": {
 						"value": "infranode"
 					},
-					"vmStorageType": {
-						"value": "[variables('vmSizesMap')[parameters('infraVmSize')].storageAccountType]"
-					},
-					"storageKind": {
-						"value": "[parameters('storageKind')]"
-					},
-					"newStorageAccountOs": {
-						"value": "[variables('newStorageAccountInfra')]"
-					},
-					"newStorageAccountData": {
+					"newStorageAccount": {
 						"value": "[variables('newStorageAccountInfra')]"
 					},
 					"diagStorageAccount": {
-						"value": "[variables('diagStorageAccount1')]"
+						"value": "[variables('diagStorageAccount')]"
 					},
 					"apiVersionStorage": {
 						"value": "[variables('apiVersionStorage')]"
 					},
 					"apiVersionCompute": {
 						"value": "[variables('apiVersionCompute')]"
-					},
-					"imageReference": {
-						"value": "[variables('imageReference')]"
-					},
-					"redHatTags": {
-						"value": "[variables('redHatTags')]"
 					}
 				}
 			}
@@ -1485,13 +1213,14 @@
 			"type": "Microsoft.Resources/deployments",
 			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"dependsOn": [
-				"[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccount2'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('newStorageAccountNode'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccount'))]",
 				"nodeNicLoop",
 				"nodeavailabilityset"
 			],
 			"copy": {
 				"name": "nodeVmLoop",
-				"count": "[parameters('nodeInstanceCount')]"
+				"count": "[variables('nodeInstanceCount')]"
 			},
 			"properties": {
 				"mode": "Incremental",
@@ -1510,107 +1239,62 @@
 						"value": "[parameters('sshPublicKey')]"
 					},
 					"dataDiskSize": {
-						"value": "[parameters('dataDiskSize')]"
+						"value": "[variables('dataDiskSize')]"
 					},
 					"adminUsername": {
 						"value": "[parameters('adminUsername')]"
 					},
 					"vmSize": {
-						"value": "[parameters('nodeVmSize')]"
+						"value": "[variables('nodeVmSize')]"
 					},
 					"availabilitySet": {
 						"value": "nodeavailabilityset"
 					},
-					"hostName": {
+					"hostname": {
 						"value": "[concat(variables('openshiftNodeHostname'), '-', copyIndex())]"
-					},
-					"unmanagedOsDiskUri": {
-						"value": "[reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables(variables('nodeOsUri'))), variables('apiVersionStorage')).primaryEndpoints['blob']]"
-					},
-					"unmanagedDataDiskUri": {
-						"value": "[reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables(variables('nodeDataUri'))), variables('apiVersionStorage')).primaryEndpoints['blob']]"
 					},
 					"role": {
 						"value": "appnode"
 					},
-					"vmStorageType": {
-						"value": "[variables('vmSizesMap')[parameters('nodeVmSize')].storageAccountType]"
-					},
-					"storageKind": {
-						"value": "[parameters('storageKind')]"
-					},
-					"newStorageAccountOs": {
-						"value": "[variables('newStorageAccountNodeOs')]"
-					},
-					"newStorageAccountData": {
-						"value": "[variables('newStorageAccountNodeData')]"
+					"newStorageAccount": {
+						"value": "[variables('newStorageAccountNode')]"
 					},
 					"diagStorageAccount": {
-						"value": "[variables('diagStorageAccount2')]"
+						"value": "[variables('diagStorageAccount')]"
 					},
 					"apiVersionStorage": {
 						"value": "[variables('apiVersionStorage')]"
 					},
 					"apiVersionCompute": {
 						"value": "[variables('apiVersionCompute')]"
-					},
-					"imageReference": {
-						"value": "[variables('imageReference')]"
-					},
-					"redHatTags": {
-						"value": "[variables('redHatTags')]"
 					}
 				}
 			}
 		}, {
-			"name": "bastionPrep",
-			"type": "Microsoft.Resources/deployments",
-			"apiVersion": "[variables('apiVersionLinkTemplate')]",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"name": "[concat(variables('openshiftBastionHostname'), '/deployOpenShift')]",
+			"location": "[parameters('location')]",
+			"apiVersion": "[variables('apiVersionCompute')]",
+			"tags": {
+				"displayName": "PrepBastion",
+				"provider": "[variables('redHatTags').provider]",
+				"app": "[variables('redHatTags').app]"
+			},
 			"dependsOn": [
 				"bastionVmDeployment"
 			],
 			"properties": {
-				"mode": "Incremental",
-				"templateLink": {
-					"uri": "[variables('bastionPrepTemplateUrl')]",
-					"contentVersion": "1.0.0.0"
+				"publisher": "Microsoft.Azure.Extensions",
+				"type": "CustomScript",
+				"typeHandlerVersion": "2.0",
+				"autoUpgradeMinorVersion": true,
+				"settings": {
+					"fileUris": [
+						"[variables('bastionPrepScriptUrl')]"
+					]
 				},
-				"parameters": {
-					"apiVersionCompute": {
-						"value": "[variables('apiVersionCompute')]"
-					},
-					"bastionPrepScriptUrl": {
-						"value": "[variables('bastionPrepScriptUrl')]"
-					},
-					"bastionPrepScriptFileName": {
-						"value": "[variables('bastionPrepScriptFileName')]"
-					},
-					"openshiftBastionHostname": {
-						"value": "[variables('openshiftBastionHostname')]"
-					},
-					"adminUsername": {
-						"value": "[parameters('adminUsername')]"
-					},
-					"rhsmUsernameOrOrgId": {
-						"value": "[parameters('rhsmUsernameOrOrgId')]"
-					},
-					"rhsmPasswordOrActivationKey": {
-						"value": "[parameters('rhsmPasswordOrActivationKey')]"
-					},
-					"rhsmPoolId": {
-						"value": "[parameters('rhsmPoolId')]"
-					},
-					"sshPrivateKey": {
-						"reference": {
-							"keyvault": {
-								"id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
-							},
-							"secretName": "[parameters('keyVaultSecret')]"
-						}
-					},
-					"redHatTags": {
-						"value": "[variables('redHatTags')]"
-					}
+				"protectedSettings": {
+					"commandToExecute": "[concat('bash ', variables('bastionPrepScriptFileName'), ' ', parameters('rhsmUsername'), ' ',variables('singlequote'), parameters('rhsmPassword'), variables('singlequote'), ' ', parameters('rhsmPoolId'))]"
 				}
 			}
 		}, {
@@ -1641,7 +1325,7 @@
 					]
 				},
 				"protectedSettings": {
-					"commandToExecute": "[concat('bash ', variables('masterPrepScriptFileName'), ' ', parameters('rhsmUsernameOrOrgId'), ' ', variables('singlequote'), parameters('rhsmPasswordOrActivationKey'), variables('singlequote'), ' ', parameters('rhsmPoolId'), ' ', parameters('adminUsername'), ' ', parameters('location'), ' ', variables('newStorageAccountPersistentVolume1'))]"
+					"commandToExecute": "[concat('bash ', variables('masterPrepScriptFileName'), ' ', parameters('rhsmUsername'), ' ', variables('singlequote'), parameters('rhsmPassword'), variables('singlequote'), ' ', parameters('rhsmPoolId'), ' ', variables('newStorageAccountPersistentVolume1'), ' ', parameters('adminUsername'))]"
 				}
 			}
 		}, {
@@ -1672,7 +1356,7 @@
 					]
 				},
 				"protectedSettings": {
-					"commandToExecute": "[concat('bash ', variables('nodePrepScriptFileName'), ' ', parameters('rhsmUsernameOrOrgId'), ' ', variables('singlequote'), parameters('rhsmPasswordOrActivationKey'), variables('singlequote'), ' ', parameters('rhsmPoolId'))]"
+					"commandToExecute": "[concat('bash ', variables('nodePrepScriptFileName'), ' ', parameters('rhsmUsername'), ' ', variables('singlequote'), parameters('rhsmPassword'), variables('singlequote'), ' ', parameters('rhsmPoolId'))]"
 				}
 			}
 		}, {
@@ -1681,7 +1365,7 @@
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionCompute')]",
 			"tags": {
-				"displayName": "PrepNodes",
+				"displayName": "PrepNode",
 				"provider": "[variables('redHatTags').provider]",
 				"app": "[variables('redHatTags').app]"
 			},
@@ -1690,7 +1374,7 @@
 			],
 			"copy": {
 				"name": "nodePrepLoop",
-				"count": "[parameters('nodeInstanceCount')]"
+				"count": "[variables('nodeInstanceCount')]"
 			},
 			"properties": {
 				"publisher": "Microsoft.Azure.Extensions",
@@ -1703,7 +1387,7 @@
 					]
 				},
 				"protectedSettings": {
-					"commandToExecute": "[concat('bash ', variables('nodePrepScriptFileName'), ' ', parameters('rhsmUsernameOrOrgId'), ' ', variables('singlequote'), parameters('rhsmPasswordOrActivationKey'), variables('singlequote'), ' ', parameters('rhsmPoolId'))]"
+					"commandToExecute": "[concat('bash ', variables('nodePrepScriptFileName'), ' ', parameters('rhsmUsername'), ' ', variables('singlequote'), parameters('rhsmPassword'), variables('singlequote'), ' ', parameters('rhsmPoolId'))]"
 				}
 			}
 		}, {
@@ -1711,7 +1395,7 @@
 			"type": "Microsoft.Resources/deployments",
 			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"dependsOn": [
-				"bastionPrep",
+				"[concat('Microsoft.Compute/virtualMachines/', variables('openshiftBastionHostname'), '/extensions/deployOpenShift')]",
 				"masterPrepLoop",
 				"infraPrepLoop",
 				"nodePrepLoop"
@@ -1723,20 +1407,23 @@
 					"contentVersion": "1.0.0.0"
 				},
 				"parameters": {
+					"_artifactsLocation": {
+						"value": "[parameters('baseUrl')]"
+					},
 					"apiVersionCompute": {
 						"value": "[variables('apiVersionCompute')]"
-					},
-					"openshiftDeploymentScriptUrl": {
-						"value": "[variables('openshiftDeploymentScriptUrl')]"
-					},
-					"openshiftDeploymentScriptFileName": {
-						"value": "[variables('openshiftDeploymentScriptFileName')]"
 					},
 					"newStorageAccountRegistry": {
 						"value": "[variables('newStorageAccountRegistry')]"
 					},
 					"newStorageAccountKey": {
 						"value": "[listKeys(variables('newStorageAccountRegistry'),'2015-06-15').key1]"
+					},
+					"newStorageAccountPersistentVolume1": {
+						"value": "[variables('newStorageAccountPersistentVolume1')]"
+					},
+					"newStorageAccountPV1Key": {
+						"value": "[listKeys(variables('newStorageAccountPersistentVolume1'),'2015-06-15').key1]"
 					},
 					"openshiftBastionHostname": {
 						"value": "[variables('openshiftBastionHostname')]"
@@ -1763,22 +1450,13 @@
 						"value": "[variables('infraInstanceCount')]"
 					},
 					"nodeInstanceCount": {
-						"value": "[parameters('nodeInstanceCount')]"
-					},
-					"storageKind": {
-						"value": "[parameters('storageKind')]"
+						"value": "[variables('nodeInstanceCount')]"
 					},
 					"adminUsername": {
 						"value": "[parameters('adminUsername')]"
 					},
 					"openshiftPassword": {
 						"value": "[parameters('openshiftPassword')]"
-					},
-					"enableMetrics": {
-						"value": "[parameters('enableMetrics')]"
-					},
-					"enableLogging": {
-						"value": "[parameters('enableLogging')]"
 					},
 					"enableAzure": {
 						"value": "[parameters('enableAzure')]"
@@ -1798,8 +1476,13 @@
 					"subDomainChosen": {
 						"value": "[concat(parameters('defaultSubDomainType'), 'Domain')]"
 					},
-					"redHatTags": {
-						"value": "[variables('redHatTags')]"
+					"sshPrivateKey": {
+						"reference": {
+							"keyvault": {
+								"id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+							},
+							"secretName": "[parameters('keyVaultSecret')]"
+						}
 					}
 				}
 			}
@@ -1808,15 +1491,15 @@
 	"outputs": {
 		"Openshift Console Url": {
 			"type": "string",
-			"value": "[concat('https://', reference(variables('openshiftMasterPublicIpDnsLabel')).dnsSettings.fqdn, '/console')]"
+			"value": "[concat('https://', reference(variables('openshiftMasterPublicIpDnsLabel')).dnsSettings.fqdn, ':8443/console')]"
 		},
-		"Bastion DNS FQDN": {
+		"Bastion SSH": {
 			"type": "string",
-			"value": "[reference(variables('bastionPublicIp')).dnsSettings.fqdn]"
+			"value": "[concat('ssh ', reference(variables('bastionPublicIp')).dnsSettings.fqdn, ' -p 22')]"
 		},
 		"Openshift Master SSH": {
 			"type": "string",
-			"value": "[concat('ssh -p 2200', parameters('adminUsername'), '@', reference(variables('openshiftMasterPublicIpDnsLabel')).dnsSettings.fqdn)]"
+			"value": "[concat('ssh ', parameters('adminUsername'), '@', reference(variables('openshiftMasterPublicIpDnsLabel')).dnsSettings.fqdn, ' -p 2200')]"
 		},
 		"Openshift Infra Load Balancer FQDN": {
 			"type": "string",

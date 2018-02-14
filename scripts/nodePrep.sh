@@ -1,8 +1,8 @@
 #!/bin/bash
 echo $(date) " - Starting Infra / Node Prep Script"
 
-RHSMUSERNAME=$1
-RHSMPASSWORD="$2"
+USERNAME_ORG=$1
+PASSWORD_ACT_KEY="$2"
 POOL_ID=$3
 
 # Remove RHUI
@@ -13,13 +13,13 @@ sleep 10
 # Register Host with Cloud Access Subscription
 echo $(date) " - Register host with Cloud Access Subscription"
 
-subscription-manager register --username="$RHSMUSERNAME" --password="$RHSMPASSWORD"
+subscription-manager register --username="$USERNAME_ORG" --password="$PASSWORD_ACT_KEY" || subscription-manager register --activationkey="$PASSWORD_ACT_KEY" --org="$USERNAME_ORG"
 
 if [ $? -eq 0 ]
 then
    echo "Subscribed successfully"
 else
-   echo "Incorrect Username or Password specified"
+   echo "Incorrect Username / Password or Organization ID / Activation Key specified"
    exit 3
 fi
 
@@ -46,25 +46,30 @@ subscription-manager repos --disable="*"
 subscription-manager repos \
     --enable="rhel-7-server-rpms" \
     --enable="rhel-7-server-extras-rpms" \
-    --enable="rhel-7-server-ose-3.6-rpms" \
+    --enable="rhel-7-server-ose-3.7-rpms" \
     --enable="rhel-7-fast-datapath-rpms"
 
 # Install base packages and update system to latest packages
 echo $(date) " - Install base packages and update system to latest packages"
 
 yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion kexec-tools sos psacct
+yum -y install cloud-utils-growpart.noarch
 yum -y update --exclude=WALinuxAgent
-
-# Ensure proper repos are still enabled
-subscription-manager repos \
-    --enable="rhel-7-server-rpms" \
-    --enable="rhel-7-server-extras-rpms" \
-    --enable="rhel-7-server-ose-3.6-rpms" \
-    --enable="rhel-7-fast-datapath-rpms" 
-
 yum -y install atomic-openshift-excluder atomic-openshift-docker-excluder
 
 atomic-openshift-excluder unexclude
+
+# Grow Root File System
+echo $(date) " - Grow Root FS"
+
+rootdev=`findmnt --target / -o SOURCE -n`
+rootdrivename=`lsblk -no pkname $rootdev`
+rootdrive="/dev/"$rootdrivename
+majorminor=`lsblk  $rootdev -o MAJ:MIN | tail -1`
+part_number=${majorminor#*:}
+
+growpart $rootdrive $part_number -u on
+xfs_growfs $rootdev
 
 # Install Docker 1.12.x
 echo $(date) " - Installing Docker 1.12.x"

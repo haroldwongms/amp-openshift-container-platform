@@ -211,7 +211,7 @@
 				"name": "enableAzure",
 				"type": "Microsoft.Common.OptionsGroup",
 				"label": "Configure Azure Cloud Provider",
-				"defaultValue": "No",
+				"defaultValue": "Yes",
 				"toolTip": "Configure OpenShift to use Azure Cloud Provider. Necessary if using Azure disk attach for persistent volumes.",
 				"constraints": {
 					"allowedValues": [
@@ -285,8 +285,8 @@
 			"openshiftClusterPrefix": "[steps('infrastructureSettings').openshiftClusterPrefix]",
 			"adminUsername": "[basics('adminUsername')]",
 			"openshiftPassword": "[steps('openShiftSettings').openshiftPassword]",
-			"rhsmUsername": "[steps('openShiftSettings').rhsmUsername]",
-			"rhsmPassword": "[steps('openShiftSettings').rhsmPassword]",
+			"rhsmUsernameOrOrgId": "[steps('openShiftSettings').rhsmUsername]",
+			"rhsmPasswordOrActivationKey": "[steps('openShiftSettings').rhsmPassword]",
 			"rhsmPoolId": "[steps('openShiftSettings').rhsmPoolId]",
 			"keyVaultResourceGroup": "[steps('infrastructureSettings').keyVaultResourceGroup]",
 			"keyVaultName": "[steps('infrastructureSettings').keyVaultName]",

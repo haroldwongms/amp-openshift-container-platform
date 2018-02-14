@@ -1,9 +1,17 @@
 #!/bin/bash
 echo $(date) " - Starting Bastion Prep Script"
 
-RHSMUSERNAME=$1
-RHSMPASSWORD="$2"
+USERNAME_ORG=$1
+PASSWORD_ACT_KEY="$2"
 POOL_ID=$3
+PRIVATEKEY=$4
+SUDOUSER=$5
+
+# Generate private keys for use by Ansible
+echo $(date) " - Generating Private keys for use by Ansible for OpenShift Installation"
+
+runuser -l $SUDOUSER -c "echo \"$PRIVATEKEY\" > ~/.ssh/id_rsa"
+runuser -l $SUDOUSER -c "chmod 600 ~/.ssh/id_rsa*"
 
 # Remove RHUI
 
@@ -13,13 +21,13 @@ sleep 10
 # Register Host with Cloud Access Subscription
 echo $(date) " - Register host with Cloud Access Subscription"
 
-subscription-manager register --username="$RHSMUSERNAME" --password="$RHSMPASSWORD"
+subscription-manager register --username="$USERNAME_ORG" --password="$PASSWORD_ACT_KEY" || subscription-manager register --activationkey="$PASSWORD_ACT_KEY" --org="$USERNAME_ORG"
 
 if [ $? -eq 0 ]
 then
    echo "Subscribed successfully"
 else
-   echo "Incorrect Username or Password specified"
+   echo "Incorrect Username / Password or Organization ID / Activation Key specified"
    exit 3
 fi
 
@@ -46,7 +54,7 @@ subscription-manager repos --disable="*"
 subscription-manager repos \
     --enable="rhel-7-server-rpms" \
     --enable="rhel-7-server-extras-rpms" \
-    --enable="rhel-7-server-ose-3.6-rpms" \
+    --enable="rhel-7-server-ose-3.7-rpms" \
     --enable="rhel-7-fast-datapath-rpms"
 
 # Install base packages and update system to latest packages
@@ -54,16 +62,7 @@ echo $(date) " - Install base packages and update system to latest packages"
 
 yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion httpd-tools kexec-tools sos psacct
 yum -y update --exclude=WALinuxAgent
-
-# Ensure proper repos are still enabled
-subscription-manager repos \
-    --enable="rhel-7-server-rpms" \
-    --enable="rhel-7-server-extras-rpms" \
-    --enable="rhel-7-server-ose-3.6-rpms" \
-    --enable="rhel-7-fast-datapath-rpms" 
-
 yum -y install atomic-openshift-excluder atomic-openshift-docker-excluder
-
 atomic-openshift-excluder unexclude
 
 # Install OpenShift utilities
@@ -72,24 +71,12 @@ echo $(date) " - Installing OpenShift utilities"
 yum -y install atomic-openshift-utils
 
 # Create playbook to update ansible.cfg file to include path to library
-
-cat > updateansiblecfg.yaml <<EOF
-#!/usr/bin/ansible-playbook
-
-- hosts: localhost
-  gather_facts: no
-  tasks:
-  - lineinfile:
-      dest: /etc/ansible/ansible.cfg
-      regexp: '^library '
-      insertafter: '#library        = /usr/share/my_modules/'
-      line: 'library = /usr/share/ansible/openshift-ansible/library/'
-EOF
+# Filename: updateansiblecfg.yaml
 
 # Run Ansible Playbook to update ansible.cfg file
 
 echo $(date) " - Updating ansible.cfg file"
-
+wget wget https://raw.githubusercontent.com/microsoft/openshift-container-platform/master/updateansiblecfg.yaml
 ansible-playbook ./updateansiblecfg.yaml
 
 echo $(date) " - Script Complete"
