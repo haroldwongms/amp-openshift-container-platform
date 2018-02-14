@@ -1235,7 +1235,7 @@
 			],
 			"copy": {
 				"name": "nodeNicLoop",
-				"count": "[parameters('nodeInstanceCount')]"
+				"count": "[variables('nodeInstanceCount')]"
 			},
 			"properties": {
 				"ipConfigurations": [{
@@ -1491,7 +1491,7 @@
 			],
 			"copy": {
 				"name": "nodeVmLoop",
-				"count": "[parameters('nodeInstanceCount')]"
+				"count": "[variables('nodeInstanceCount')]"
 			},
 			"properties": {
 				"mode": "Incremental",
@@ -1690,7 +1690,7 @@
 			],
 			"copy": {
 				"name": "nodePrepLoop",
-				"count": "[parameters('nodeInstanceCount')]"
+				"count": "[variables('nodeInstanceCount')]"
 			},
 			"properties": {
 				"publisher": "Microsoft.Azure.Extensions",
@@ -1763,7 +1763,7 @@
 						"value": "[variables('infraInstanceCount')]"
 					},
 					"nodeInstanceCount": {
-						"value": "[parameters('nodeInstanceCount')]"
+						"value": "[variables('nodeInstanceCount')]"
 					},
 					"storageKind": {
 						"value": "[parameters('storageKind')]"
