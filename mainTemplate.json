@@ -60,8 +60,8 @@
 		},
 		"nodeInstanceCount": {
 			"type": "string",
-			"defaultValue": 2,
-			"allowedValues": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+			"defaultValue": "2",
+			"allowedValues": ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
 			"metadata": {
 				"description": "Number of OpenShift nodes"
 			}
