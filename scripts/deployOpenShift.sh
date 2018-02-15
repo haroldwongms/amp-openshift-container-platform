@@ -25,9 +25,8 @@ export AADCLIENTID=${18}
 export AADCLIENTSECRET="${19}"
 export RESOURCEGROUP=${20}
 export LOCATION=${21}
-export COCKPIT=${22}
-export AZURE=${23}
-export STORAGEKIND=${24}
+export AZURE=${22}
+export STORAGEKIND=${23}
 
 export BASTION=$(hostname)
 
@@ -83,7 +82,6 @@ fi
 # Filename: reboot-nodes.yaml
 
 # Create Azure Cloud Provider configuration Playbook for Master Config
-
 # Filename: setup-azure-master.yaml
 
 # Create Azure Cloud Provider configuration Playbook for Node Config (Master Nodes)
@@ -118,9 +116,9 @@ docker_udev_workaround=True
 openshift_use_dnsmasq=true
 openshift_master_default_subdomain=$ROUTING
 openshift_override_hostname_check=true
-osm_use_cockpit=${COCKPIT}
 os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
-console_port=443
+openshift_master_api_port=443
+openshift_master_console_port=443
 openshift_cloudprovider_kind=azure
 osm_default_node_selector='type=app'
 openshift_disable_check=memory_availability,docker_image_availability
@@ -160,7 +158,7 @@ openshift_logging_es_nodeselector={"type":"infra"}
 openshift_logging_kibana_nodeselector={"type":"infra"}
 openshift_logging_curator_nodeselector={"type":"infra"}
 openshift_master_logging_public_url=https://kibana.$ROUTING
-openshift_logging_master_public_url=https://$MASTERPUBLICIPHOSTNAME:8443
+openshift_logging_master_public_url=https://$MASTERPUBLICIPHOSTNAME:443
 openshift_logging_storage_labels={'storage': 'logging'}
 
 # host group for masters
@@ -270,15 +268,6 @@ runuser $SUDOUSER -c "ansible-playbook ~/openshift-container-platform-playbooks/
 echo $(date) "- Assigning cluster admin rights to user"
 
 runuser $SUDOUSER -c "ansible-playbook ~/openshift-container-platform-playbooks/assignclusteradminrights.yaml"
-
-if [[ $COCKPIT == "true" ]]
-then
-
-# Setting password for root if Cockpit is enabled
-echo $(date) "- Assigning password for root, which is used to login to Cockpit"
-
-runuser $SUDOUSER -c "ansible-playbook ~/openshift-container-platform-playbooks/assignrootpassword.yaml"
-fi
 
 # Configure Docker Registry to use Azure Storage Account
 echo $(date) "- Configuring Docker Registry to use Azure Storage Account"
