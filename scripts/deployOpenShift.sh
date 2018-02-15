@@ -5,8 +5,7 @@ echo $(date) " - Starting Script"
 set -e
 
 export SUDOUSER=$1
-export PASSWORD="$2"
-export MASTER=$3
+export PASSWORD="$2" export MASTER=$3
 export MASTERPUBLICIPHOSTNAME=$4
 export MASTERPUBLICIPADDRESS=$5
 export INFRA=$6
@@ -342,6 +341,7 @@ then
 
 	echo $(date) "- Rebooting cluster to complete installation"
 
+	runuser -l $SUDOUSER -c  "oc label nodes $MASTER-0 openshift-infra=apiserver"
 	runuser -l $SUDOUSER -c  "oc label nodes --all logging-infra-fluentd=true logging=true"
 	runuser -l $SUDOUSER -c "ansible-playbook ~/openshift-container-platform-playbooks/reboot-master.yaml"
 	runuser -l $SUDOUSER -c "ansible-playbook ~/openshift-container-platform-playbooks/reboot-nodes.yaml"
