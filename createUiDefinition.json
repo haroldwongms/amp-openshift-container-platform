@@ -231,7 +231,7 @@
 				"label": "Azure AD Service Principal Client ID GUID",
 				"toolTip": "Azure AD Service Principal Client ID GUID - also known as AppID.",
 				"constraints": {
-					"required": true,
+					"required": "[equals(steps('openShiftSettings').enableAzure, 'true')]",
 					"regex": "^[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{12}$"
 				},
 				"visible": "[equals(steps('openShiftSettings').enableAzure, 'true')]"
@@ -244,7 +244,7 @@
 				},
 				"toolTip": "Azure AD Service Principal Client ID Secret.",
 				"constraints": {
-					"required": true
+					"required": "[equals(steps('openShiftSettings').enableAzure, 'true')]"
 				},
 				"options": {
 					"hideConfirmation": true
