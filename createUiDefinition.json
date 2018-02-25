@@ -162,7 +162,7 @@
 				"toolTip": "User Name to access your Red Hat Subscription - access.redhat.com. This is used to register the RHEL instance to your subscription and will not be stored by Microsoft or Red Hat.",
 				"constraints": {
 					"required": true,
-					"regex":"^{5,}$",
+					"regex":"^[a-z0-9A-Z-_.@]{5,}$",
 					"validationMessage": "Red Hat Subscription usernames need to be 5 or more characters."
 				}
 			}, {
