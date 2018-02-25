@@ -10,7 +10,9 @@
 			"defaultValue": "clusteradmin",
 			"toolTip": "The name of the Admin User for initial SSH access to all OCP Nodes.",
 			"constraints": {
-				"required": true
+				"required": true,
+				"regex": "^[a-z0-9A-Z-]{1,31}$",
+				"validationMessage": "Only alphanumeric characters and dashes are allowed, and the value must be 1-31 characters long."
 			},
 			"osPlatform": "Linux"
 		}, {
@@ -54,36 +56,6 @@
 					"required": true,
 					"regex": "^[a-z0-9A-Z]{1,20}$",
 					"validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-20 characters long."
-				}
-			}, {
-				"name": "coreOcpConfig",
-				"type": "Microsoft.Common.OptionsGroup",
-				"label": "Core Configuration of OpenShift Cluster",
-				"defaultValue": "",
-				"toolTip": "For display purposes only",
-				"constraints": {
-					"allowedValues": [
-						{
-						"label": "1 Bastion Node of size Standard DS2_v2",
-						"value": "bastion"
-						},
-						{
-						"label": "3 Master Node of size Standard E2s_v3",
-						"value": "master"
-						},
-						{
-						"label": "3 Infra Node of size Standard D4s_v3",
-						"value": "infra"
-						},
-						{
-						"label": "128 GB Data Disk for Docker Volume per VM",
-						"value": "disk"
-						},
-						{
-						"label": "Total Cores: 6 Ev3, 12 Dv3, 2 DSv2",
-						"value": "cores"
-						}
-					]
 				}
 			}, {
 				"name": "nodeInstanceCount",
@@ -136,7 +108,9 @@
 				"label": "Key Vault Resource Group Name",
 				"toolTip": "Name of the Resource Group that contains the Key Vault used to store the Private Key.",
 				"constraints": {
-					"required": true
+					"required": true,
+					"regex": "^[a-z0-9A-Z-_]{1,90}$",
+					"validationMessage": "Only alphanumeric characters, underscores, and dashes are allowed."
 				}
 			}, {
 				"name": "keyVaultName",
@@ -144,7 +118,9 @@
 				"label": "Key Vault Name",
 				"toolTip": "Name of the Key Vault that contains the Secret used to store the Private Key.",
 				"constraints": {
-					"required": true
+					"required": true,
+					"regex": "^[a-z0-9A-Z-]{3,24}$",
+					"validationMessage": "Only alphanumeric characters and dashes are allowed, and has to be between 3 and 24 characters."
 				}
 			}, {
 				"name": "keyVaultSecret",
@@ -152,7 +128,9 @@
 				"label": "Secret Name",
 				"toolTip": "Name of the Secret that contains the Private Key.",
 				"constraints": {
-					"required": true
+					"required": true,
+					"regex": "^[a-z0-9A-Z-]{1,127}$",
+					"validationMessage": "Only alphanumeric characters and dashes are allowed."
 				}
 			}]
 		}, {
@@ -183,7 +161,9 @@
 				"label": "Red Hat Subscription Manager User Name",
 				"toolTip": "User Name to access your Red Hat Subscription - access.redhat.com. This is used to register the RHEL instance to your subscription and will not be stored by Microsoft or Red Hat.",
 				"constraints": {
-					"required": true
+					"required": true,
+					"regex":"^{5,}$",
+					"validationMessage": "Red Hat Subscription usernames need to be 5 or more characters."
 				}
 			}, {
 				"name": "rhsmPassword",
@@ -205,7 +185,9 @@
 				"label": "Red Hat Subscription Manager OpenShift Pool ID",
 				"toolTip": "The Pool ID that contains OpenShift Container Platform entitlement. Ensure you have enough entitlements of OpenShift Container Platform for the installation of the cluster.",
 				"constraints": {
-					"required": true
+					"required": true,
+					"regex": "^[a-fA-F0-9]{1,64}$",
+					"validationMessage": "Pool IDs can only contain hexadecimal values."
 				}
 			}, {
 				"name": "enableAzure",

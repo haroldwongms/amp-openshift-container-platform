@@ -76,7 +76,6 @@
 		},
 		"adminUsername": {
 			"type": "string",
-			"defaultValue": "ocpadmin",
 			"minLength": 1,
 			"metadata": {
 				"description": "Administrator username on all VMs and first user created for OpenShift login"
