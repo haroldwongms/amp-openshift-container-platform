@@ -1593,6 +1593,9 @@
 					"contentVersion": "1.0.0.0"
 				},
 				"parameters": {
+					"location": {
+						"value": "[parameters('location')]"
+					},
 					"apiVersionCompute": {
 						"value": "[variables('apiVersionCompute')]"
 					},
@@ -1740,6 +1743,9 @@
 					"contentVersion": "1.0.0.0"
 				},
 				"parameters": {
+					"location": {
+						"value": "[parameters('location')]"
+					},
 					"apiVersionCompute": {
 						"value": "[variables('apiVersionCompute')]"
 					},

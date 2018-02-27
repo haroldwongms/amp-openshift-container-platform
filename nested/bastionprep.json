@@ -4,9 +4,8 @@
 	"parameters": {
 		"location": {
 			"type": "string",
-			"defaultValue": "",
 			"metadata": {
-				"description": "Region in which the resource group and components will be deployed"
+				"description": "Datacenter Region Location"
 			}
 		},
 		"apiVersionCompute": {
