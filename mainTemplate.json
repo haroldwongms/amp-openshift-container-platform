@@ -168,14 +168,14 @@
 		},
 		"aadClientId": {
 			"type": "string",
-			"defaultValue": "12345678-abcd-abcd-abcd-123456789000",
+			"defaultValue": "",
 			"metadata": {
 				"description": "Azure AD Client ID"
 			}
 		},
 		"aadClientSecret": {
 			"type": "securestring",
-			"defaultValue": "password",
+			"defaultValue": "",
 			"metadata": {
 				"description": "Azure AD Client Secret"
 			}
