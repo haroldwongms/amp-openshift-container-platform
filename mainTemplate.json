@@ -1743,7 +1743,7 @@
 				},
 				"parameters": {
 					"location": {
-						"value": "[variables('location')]"
+						"value": "[parameters('location')]"
 					},
 					"sshKeyPath": {
 						"value": "[variables('sshKeyPath')]"
