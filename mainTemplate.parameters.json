@@ -53,6 +53,9 @@
 		"aadClientSecret": {
 			"value": "GEN-PASSWORD"
 		},
+                "enableCNS": {
+                        "value": "false"
+                },
                 "defaultSubDomainType": {
                         "value": "nipio"
                 },
