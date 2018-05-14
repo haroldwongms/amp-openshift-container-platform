@@ -55,7 +55,7 @@
 			"minLength": 4,
 			"maxLength": 20,
 			"metadata": {
-				"description": "OpenShift cluster prefix.  Used to generate master, infra and node hostnames.  Maximum of 20 characters."
+				"description": "OpenShift cluster prefix. Used to generate master, infra and node hostnames. Maximum of 20 characters."
 			}
 		},
 		"nodeInstanceCount": {
@@ -1020,12 +1020,12 @@
 			"name": "[variables('availabilitySetArray')[copyIndex()].name]",
 			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionCompute')]",
-      "sku": {
+			"sku": {
 				"name": "[variables(variables('availabilitySetSku'))]"
 			},
 			"properties": {
 				"platformFaultDomainCount": "[variables(variables('platformFaultDomainCount'))]",
-        "platformUpdateDomainCount": "5"
+				"platformUpdateDomainCount": "5"
 			},
 			"tags": {
 				"displayName": "[variables('availabilitySetArray')[copyIndex()].tagName]",
@@ -2043,6 +2043,9 @@
 					},
 					"openshiftMasterPublicIpAddress": {
 						"value": "[reference(variables('openshiftMasterPublicIpDnsLabel')).ipAddress]"
+					},
+					"openshiftCnsHostname": {
+						"value": "[variables('openshiftCnsHostname')]"
 					},
 					"openshiftInfraHostname": {
 						"value": "[variables('openshiftInfraHostname')]"
