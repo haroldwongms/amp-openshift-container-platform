@@ -817,7 +817,7 @@
 				"type": "Microsoft.Network/networkSecurityGroups",
 				"name": "[concat(variables('openshiftCnsHostname'), '-nsg')]",
 				"condition": "[equals(parameters('enableCNS'), 'true')]",
-				"location": "[variables('location')]",
+				"location": "[parameters('location')]",
 				"tags": {
 					"displayName": "InfraNSG",
 					"provider": "[variables('redHatTags').provider]",
@@ -948,7 +948,7 @@
 		}, {
 			"type": "Microsoft.Storage/storageAccounts",
 			"name": "[variables('newStorageAccountCns')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"kind": "Storage",
 			"apiVersion": "[variables('apiVersionStorage')]",
 			"tags": {
@@ -1042,7 +1042,7 @@
 			"type": "Microsoft.Compute/availabilitySets",
 			"name": "cnsavailabilityset",
 			"condition": "[equals(parameters('enableCNS'), 'true')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionCompute')]",
 			"sku": {
 				"name": "[variables(variables('availabilitySetSku'))]"
@@ -1332,7 +1332,7 @@
 			"type": "Microsoft.Network/networkInterfaces",
 			"name": "[concat(variables('openshiftCnsHostname'), '-', copyIndex(), '-nic')]",
 			"condition": "[equals(parameters('enableCNS'), 'true')]",
-			"location": "[variables('location')]",
+			"location": "[parameters('location')]",
 			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "OpenShiftInfraNetworkInterfaces",
@@ -1931,7 +1931,7 @@
 				"type": "Microsoft.Compute/virtualMachines/extensions",
 				"name": "[concat(variables('openshiftCnsHostname'), '-', copyIndex(), '/prepNodes')]",
 				"condition": "[equals(parameters('enableCNS'), 'true')]",
-				"location": "[variables('location')]",
+				"location": "[parameters('location')]",
 				"apiVersion": "[variables('apiVersionCompute')]",
 				"tags": {
 					"displayName": "PrepCns",
