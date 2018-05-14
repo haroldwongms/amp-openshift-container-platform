@@ -176,6 +176,12 @@
 				"description": "Subdomain chosen for application routing"
 			}
 		},
+		"plan": {
+			"type": "object",
+			"metadata": {
+				"description": "Plan"
+			}
+		},
 		"redHatTags": {
 			"type": "object",
 			"metadata": {

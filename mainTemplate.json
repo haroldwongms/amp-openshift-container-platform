@@ -1052,7 +1052,7 @@
 				"platformUpdateDomainCount": "5"
 			},
 			"tags": {
-				"displayName": "CsnAvailabilitySet",
+				"displayName": "CnsAvailabilitySet",
 				"provider": "[variables('redHatTags').provider]",
 				"platform": "[variables('redHatTags').platform]",
 				"version": "[variables('redHatTags').version]",
@@ -1801,6 +1801,9 @@
 					},
 					"imageReference": {
 						"value": "[variables('imageReference')]"
+					},
+					"plan": {
+						"value": "[variables('plan')]"
 					},
 					"redHatTags": {
 						"value": "[variables('redHatTags')]"

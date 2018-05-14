@@ -116,6 +116,12 @@
 				"description": "Image Reference"
 			}
 		},
+		"plan": {
+			"type": "object",
+			"metadata": {
+				"description": "Plan"
+			}
+		},
 		"redHatTags": {
 			"type": "object",
 			"metadata": {
