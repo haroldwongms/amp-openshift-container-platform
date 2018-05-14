@@ -373,7 +373,7 @@
 		"masterPrepScriptFileName": "masterPrep.sh",
 		"openshiftDeploymentScriptFileName": "deployOpenShift.sh",
 		"clusterNodeDeploymentTemplateUrl": "[concat(parameters('baseUrl'), '/nested/galleryclusternode.json')]",
-		"clusterCnsNodeDeploymentTemplateUrl": "[concat(parameters('_artifactsLocation'), '/nested/galleryclustercnsnode.json')]",
+		"clusterCnsNodeDeploymentTemplateUrl": "[concat(parameters('baseUrl'), '/nested/galleryclustercnsnode.json')]",
 		"basicDeploymentTemplateUrl": "[concat(parameters('baseUrl'), '/nested/gallerybasic.json')]",
 		"openshiftDeploymentTemplateUrl": "[concat(parameters('baseUrl'), '/nested/openshiftdeploy.json')]",
 		"bastionPrepTemplateUrl": "[concat(parameters('baseUrl'), '/nested/bastionprep.json')]",
