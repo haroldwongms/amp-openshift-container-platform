@@ -272,7 +272,7 @@
 				"name": "addressPrefix",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Address Range for the VirtualNetwork (default is 10.0.0.0/14)",
-				"toolTip": "Needs to contain the master and node subnets",
+				"toolTip": "Has to be an RFC 1918 address and will contain the master and node subnets.",
 				"constraints": {
 					"required": "[equals(steps('openShiftSettings').customIPrange, 'true')]",
 					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
@@ -282,20 +282,20 @@
 				"name": "masterSubnetPrefix",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Address Range for the subnet containing the master nodes (default is 10.1.0.0/16)",
-				"toolTip": "Needs to contain the master and node subnets",
+				"toolTip": "Needs to be at least 16 IP addresses and be follow RFC 1918.",
 				"constraints": {
 					"required": "[equals(steps('openShiftSettings').customIPrange, 'true')]",
-					"regex": "^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[0-9]{1,2}$"
+					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
 				},
 				"visible": "[equals(steps('openShiftSettings').customIPrange, 'true')]"
 			}, {
 				"name": "nodeSubnetPrefix",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Address Range for the subnet containing all the other nodes (default is 10.2.0.0/16)",
-				"toolTip": "Needs to contain the master and node subnets",
+				"toolTip": "Needs to be at least 32 IP addresses and be follow RFC 1918.",
 				"constraints": {
 					"required": "[equals(steps('openShiftSettings').customIPrange, 'true')]",
-					"regex": "^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[0-9]{1,2}$"
+					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
 				},
 				"visible": "[equals(steps('openShiftSettings').customIPrange, 'true')]"
 			}, {
