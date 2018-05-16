@@ -382,7 +382,7 @@
 			}, {
 				"name": "enableMetrics",
 				"type": "Microsoft.Common.OptionsGroup",
-				"label": "Configure Container Native Storage (CNS)",
+				"label": "Configure Metrics for the Cluster",
 				"defaultValue": "No",
 				"toolTip": "Installs metrics into the OpenShift cluster.",
 				"constraints": {
