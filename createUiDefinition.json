@@ -157,6 +157,24 @@
 				"count": "[steps('infrastructureSettings').nodeInstanceCount]",
 				"visible": true
 			}, {
+				"name": "customIPrange",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "Custom IP Subnet",
+				"defaultValue": "No",
+				"toolTip": "Configure custom IP range for the VirtualNetwork and its subnets (default are in 10.0.0.0/14).",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "Yes",
+						"value": "true"
+						},
+						{
+						"label": "No",
+						"value": "false"
+						}
+					]
+				}
+			}, {
 				"name": "addressPrefix",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Address Range for the VirtualNetwork (default is 10.0.0.0/14)",
@@ -367,24 +385,6 @@
 				"label": "Configure Container Native Storage (CNS)",
 				"defaultValue": "No",
 				"toolTip": "Installs metrics into the OpenShift cluster.",
-				"constraints": {
-					"allowedValues": [
-						{
-						"label": "Yes",
-						"value": "true"
-						},
-						{
-						"label": "No",
-						"value": "false"
-						}
-					]
-				}
-			}, {
-				"name": "customIPrange",
-				"type": "Microsoft.Common.OptionsGroup",
-				"label": "Custom IP Subnet",
-				"defaultValue": "No",
-				"toolTip": "Configure custom IP range for the VirtualNetwork and its subnets (default are in 10.0.0.0/14).",
 				"constraints": {
 					"allowedValues": [
 						{
