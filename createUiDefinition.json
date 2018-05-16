@@ -81,7 +81,7 @@
 					"offer": "rhel-ocp-marketplace",
 					"sku": "rhel74"
 				},
-				"count": "[steps('infrastructureSettings').nodeInstanceCount]",
+				"count": "3",
 				"visible": true
 			}, {
 				"name": "infraVmSize",
@@ -109,7 +109,7 @@
 					"offer": "rhel-ocp-marketplace",
 					"sku": "rhel74"
 				},
-				"count": "[steps('infrastructureSettings').nodeInstanceCount]",
+				"count": "3",
 				"visible": true
 			}, {
 				"name": "nodeInstanceCount",
@@ -156,29 +156,6 @@
 				},
 				"count": "[steps('infrastructureSettings').nodeInstanceCount]",
 				"visible": true
-			}]
-		}, {
-			"name": "openShiftSettings",
-			"label": "OpenShift Container Platform Settings",
-			"subLabel": {
-				"preValidation": "Configure OpenShift Container Platform Settings",
-				"postValidation": "Done"
-			},
-			"bladeTitle": "OpenShift Container Platform Settings",
-			"elements": [{
-				"name": "openshiftPassword",
-				"type": "Microsoft.Common.PasswordBox",
-				"label": {
-					"password": "OpenShift Admin User Password",
-					"confirmPassword": "Confirm OpenShift Admin User Password"
-				},
-				"toolTip": "Password for the OpenShift Admin User - not the VM Admin User.",
-				"constraints": {
-					"required": true
-				},
-				"options": {
-					"hideConfirmation": false
-				}
 			}, {
 				"name": "keyVaultResourceGroup",
 				"type": "Microsoft.Common.TextBox",
@@ -208,6 +185,29 @@
 					"required": true,
 					"regex": "^[a-z0-9A-Z-]{1,127}$",
 					"validationMessage": "Only alphanumeric characters and dashes are allowed."
+				}
+			}]
+		}, {
+			"name": "openShiftSettings",
+			"label": "OpenShift Container Platform Settings",
+			"subLabel": {
+				"preValidation": "Configure OpenShift Container Platform Settings",
+				"postValidation": "Done"
+			},
+			"bladeTitle": "OpenShift Container Platform Settings",
+			"elements": [{
+				"name": "openshiftPassword",
+				"type": "Microsoft.Common.PasswordBox",
+				"label": {
+					"password": "OpenShift Admin User Password",
+					"confirmPassword": "Confirm OpenShift Admin User Password"
+				},
+				"toolTip": "Password for the OpenShift Admin User - not the VM Admin User.",
+				"constraints": {
+					"required": true
+				},
+				"options": {
+					"hideConfirmation": false
 				}
 			}, {
 				"name": "rhsmUsername",
@@ -289,9 +289,9 @@
 			}]
 		}, {
 			"name": "additionalSettings",
-			"label": "Additional OpenShift Container Platform Settings",
+			"label": "Additional Settings",
 			"subLabel": {
-				"preValidation": "Additional OpenShift Container Platform Settings",
+				"preValidation": "Additional Settings",
 				"postValidation": "Done"
 			},
 			"bladeTitle": "Additional Settings",
@@ -394,14 +394,14 @@
 			"nodeInstanceCount": "[int(steps('infrastructureSettings').nodeInstanceCount)]",
 			"nodeVmSize": "[steps('infrastructureSettings').nodeVmSize]",
 			"openshiftClusterPrefix": "[steps('infrastructureSettings').openshiftClusterPrefix]",
+			"keyVaultResourceGroup": "[steps('infrastructureSettings').keyVaultResourceGroup]",
+			"keyVaultName": "[steps('infrastructureSettings').keyVaultName]",
+			"keyVaultSecret": "[steps('infrastructureSettings').keyVaultSecret]",
 			"adminUsername": "[basics('adminUsername')]",
 			"openshiftPassword": "[steps('openShiftSettings').openshiftPassword]",
 			"rhsmUsernameOrOrgId": "[steps('openShiftSettings').rhsmUsername]",
 			"rhsmPasswordOrActivationKey": "[steps('openShiftSettings').rhsmPassword]",
 			"rhsmPoolId": "[steps('openShiftSettings').rhsmPoolId]",
-			"keyVaultResourceGroup": "[steps('openShiftSettings').keyVaultResourceGroup]",
-			"keyVaultName": "[steps('openShiftSettings').keyVaultName]",
-			"keyVaultSecret": "[steps('openShiftSettings').keyVaultSecret]",
 			"enableAzure": "[steps('openShiftSettings').enableAzure]",
 			"aadClientId": "[steps('openShiftSettings').aadClientId]",
 			"aadClientSecret": "[steps('openShiftSettings').aadClientSecret]",
