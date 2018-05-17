@@ -427,6 +427,8 @@
 		"outputs": {
 			"location": "[location()]",
 			"sshPublicKey": "[basics('adminPassword').sshPublicKey]",
+			"infraVmSize": "[steps('infrastructureSettings').masterVmSize]",
+			"masterVmSize": "[steps('infrastructureSettings').infraVmSize]",
 			"nodeInstanceCount": "[int(steps('infrastructureSettings').nodeInstanceCount)]",
 			"nodeVmSize": "[steps('infrastructureSettings').nodeVmSize]",
 			"openshiftClusterPrefix": "[steps('infrastructureSettings').openshiftClusterPrefix]",
