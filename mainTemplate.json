@@ -2045,7 +2045,7 @@
 						"value": "[variables('newStorageAccountRegistry')]"
 					},
 					"newStorageAccountKey": {
-						"value": "[listKeys(variables('newStorageAccountRegistry'),'2015-06-15').key1]"
+						"value": "[listKeys(variables('newStorageAccountRegistry'),variables('apiVersionStorage')).key1]"
 					},
 					"openshiftBastionHostname": {
 						"value": "[variables('openshiftBastionHostname')]"
