@@ -63,7 +63,7 @@
 			"value": "domain.com"
 		},
 		"addressPrefix": {
-			"value": "10.0.0.0/14"
+			"value": "10.0.0.0/8"
 		},
 		"masterSubnetPrefix": {
 			"value": "10.1.0.0/16"
