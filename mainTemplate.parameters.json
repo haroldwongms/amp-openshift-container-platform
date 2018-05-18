@@ -17,8 +17,20 @@
                 "nodeInstanceCount": {
                         "value": 2
                 },
-                "nodeVmSize": {
+                "bastionVmSize": {
+                        "value": "Standard_DS2_v2"
+                },
+                "infraVmSize": {
                         "value": "Standard_D4s_v3"
+                },
+                "masterVmSize": {
+                        "value": "Standard_E2s_v3"
+                },
+                "nodeVmSize": {
+                        "value": "Standard_D2s_v3"
+                },
+                "cnsVmSize": {
+                        "value": "Standard_E4s_v3"
                 },
                 "openshiftPassword": {
 			"value": "GEN-PASSWORD"

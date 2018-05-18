@@ -157,6 +157,32 @@
 				"count": "[steps('infrastructureSettings').nodeInstanceCount]",
 				"visible": true
 			}, {
+				"name": "bastionVmSize",
+				"type": "Microsoft.Compute.SizeSelector",
+				"label": "Bastion Host Size",
+				"toolTip": "The size of bastion host used to access and deploy the OpenShift cluster.",
+				"recommendedSizes": [
+					"Standard_DS2_v2",
+					"Standard_D2s_v3"
+				],
+				"constraints": {
+					"allowedSizes": [
+						"Standard_DS2_v2",
+						"Standard_D2s_v3"
+					]
+				},
+				"options": {
+					"hideDiskTypeFilter": true
+				},
+				"osPlatform": "Linux",
+				"imageReference": {
+					"publisher": "redhat",
+					"offer": "rhel-ocp-marketplace",
+					"sku": "rhel74"
+				},
+				"count": "1",
+				"visible": true
+			}, {
 				"name": "customIPrange",
 				"type": "Microsoft.Common.OptionsGroup",
 				"label": "Custom IP Subnet",
@@ -362,6 +388,32 @@
 					]
 				}
 			}, {
+				"name": "cnsVmSize",
+				"type": "Microsoft.Compute.SizeSelector",
+				"label": "CNS Node Size",
+				"toolTip": "The size of nodes used to host Cloud Native Storage in the OpenShift cluster.",
+				"recommendedSizes": [
+					"Standard_E4s_v3",
+					"Standard_D8s_v3"
+				],
+				"constraints": {
+					"allowedSizes": [
+						"Standard_E4s_v3",
+						"Standard_D8s_v3"
+					]
+				},
+				"options": {
+					"hideDiskTypeFilter": true
+				},
+				"osPlatform": "Linux",
+				"imageReference": {
+					"publisher": "redhat",
+					"offer": "rhel-ocp-marketplace",
+					"sku": "rhel74"
+				},
+				"count": "3",
+				"visible": "[equals(steps('additionalSettings').enableCNS, 'true')]"
+			}, {
 				"name": "enableLogging",
 				"type": "Microsoft.Common.OptionsGroup",
 				"label": "Configure Cluster Logging",
@@ -427,6 +479,8 @@
 		"outputs": {
 			"location": "[location()]",
 			"sshPublicKey": "[basics('adminPassword').sshPublicKey]",
+			"bastionVmSize": "[steps('infrastructureSettings').masterVmSize]",
+			"cnsVmSize": "[steps('infrastructureSettings').masterVmSize]",
 			"infraVmSize": "[steps('infrastructureSettings').masterVmSize]",
 			"masterVmSize": "[steps('infrastructureSettings').infraVmSize]",
 			"nodeInstanceCount": "[int(steps('infrastructureSettings').nodeInstanceCount)]",

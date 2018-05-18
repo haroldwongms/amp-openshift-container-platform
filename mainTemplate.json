@@ -10,6 +10,13 @@
 			},
 			"defaultValue": "https://raw.githubusercontent.com/vincepower/amp-openshift-container-platform/master"
 		},
+		"bastionVmSize": {
+			"type": "string",
+			"defaultValue": "Standard_DS2_v2",
+			"metadata": {
+				"description": "Bastion HOst VM size"
+			}
+		},
 		"infraVmSize": {
 			"type": "string",
 			"defaultValue": "Standard_D4s_v3",
@@ -31,7 +38,14 @@
 				"description": "OpenShift Node VM(s) size"
 			}
 		},
-		"location": {
+		"cnsVmSize": {
+			"type": "string",
+			"defaultValue": "Standard_E4s_v3",
+			"metadata": {
+				"description": "OpenShift CNS Node VM(s) size"
+			}
+		},
+ 		"location": {
 			"type": "string",
 			"defaultValue": "",
 			"metadata": {
@@ -227,8 +241,6 @@
 		}
 	},
 	"variables": {
-		"masterVmSize": "Standard_E2s_v3",
-		"infraVmSize": "Standard_D4s_v3",
 		"masterInstanceCount": 3,
 		"infraInstanceCount": 3,
 		"nodeInstanceCount": "[int(parameters('nodeInstanceCount'))]",
@@ -279,24 +291,24 @@
 		"platformFaultDomainCount": "[concat(parameters('storageKind'), 'PlatformFaultDomainCount')]",
 		"storageSkuObject": {
 			"bastion": {
-				"skuName": "[variables('vmSizesMap')[variables('bastionVmSize')].storageAccountType]",
-				"skuTier": "[variables('vmSizesMap')[variables('bastionVmSize')].storageAccountTier]"
+				"skuName": "[variables('vmSizesMap')[parameters('bastionVmSize')].storageAccountType]",
+				"skuTier": "[variables('vmSizesMap')[parameters('bastionVmSize')].storageAccountTier]"
 			},
 			"master": {
-				"skuName": "[variables('vmSizesMap')[variables('masterVmSize')].storageAccountType]",
-				"skuTier": "[variables('vmSizesMap')[variables('masterVmSize')].storageAccountTier]"
+				"skuName": "[variables('vmSizesMap')[parameters('masterVmSize')].storageAccountType]",
+				"skuTier": "[variables('vmSizesMap')[parameters('masterVmSize')].storageAccountTier]"
 			},
 			"infra": {
-				"skuName": "[variables('vmSizesMap')[variables('infraVmSize')].storageAccountType]",
-				"skuTier": "[variables('vmSizesMap')[variables('infraVmSize')].storageAccountTier]"
+				"skuName": "[variables('vmSizesMap')[parameters('infraVmSize')].storageAccountType]",
+				"skuTier": "[variables('vmSizesMap')[parameters('infraVmSize')].storageAccountTier]"
 			},
 			"node": {
 				"skuName": "[variables('vmSizesMap')[parameters('nodeVmSize')].storageAccountType]",
 				"skuTier": "[variables('vmSizesMap')[parameters('nodeVmSize')].storageAccountTier]"
 			},
 			"cns": {
-				"skuName": "[variables('vmSizesMap')[parameters('nodeVmSize')].storageAccountType]",
-				"skuTier": "[variables('vmSizesMap')[parameters('nodeVmSize')].storageAccountTier]"
+				"skuName": "[variables('vmSizesMap')[parameters('cnsVmSize')].storageAccountType]",
+				"skuTier": "[variables('vmSizesMap')[parameters('cnsVmSize')].storageAccountTier]"
 			},
 			"diagnostics": {
 				"skuName": "Standard_LRS",
@@ -373,8 +385,6 @@
 			"platform": "Azure",
 			"provider": "9d2c71fc-96ba-4b4a-93b3-14def5bc96fc"
 		},
-		"bastionVmSize": "Standard_DS2_v2",
-		"cnsVmSize": "Standard_E4s_v3",
 		"glusterDiskSize": 128,
 		"cnsInstanceCount": 3,
 		"singlequote": "'",
@@ -1440,7 +1450,7 @@
 						"value": "[parameters('adminUsername')]"
 					},
 					"vmSize": {
-						"value": "[variables('bastionVmSize')]"
+						"value": "[parameters('bastionVmSize')]"
 					},
 					"hostName": {
 						"value": "[variables('openshiftBastionHostname')]"
@@ -1452,7 +1462,7 @@
 						"value": "bastionnode"
 					},
 					"vmStorageType": {
-						"value": "[variables('vmSizesMap')[variables('bastionVmSize')].storageAccountType]"
+						"value": "[variables('vmSizesMap')[parameters('bastionVmSize')].storageAccountType]"
 					},
 					"storageKind": {
 						"value": "[parameters('storageKind')]"
@@ -1516,7 +1526,7 @@
 						"value": "[parameters('adminUsername')]"
 					},
 					"vmSize": {
-						"value": "[variables('masterVmSize')]"
+						"value": "[parameters('masterVmSize')]"
 					},
 					"availabilitySet": {
 						"value": "masteravailabilityset"
@@ -1534,7 +1544,7 @@
 						"value": "masternode"
 					},
 					"vmStorageType": {
-						"value": "[variables('vmSizesMap')[variables('masterVmSize')].storageAccountType]"
+						"value": "[variables('vmSizesMap')[parameters('masterVmSize')].storageAccountType]"
 					},
 					"storageKind": {
 						"value": "[parameters('storageKind')]"
@@ -1601,7 +1611,7 @@
 						"value": "[parameters('adminUsername')]"
 					},
 					"vmSize": {
-						"value": "[variables('infraVmSize')]"
+						"value": "[parameters('infraVmSize')]"
 					},
 					"availabilitySet": {
 						"value": "infraavailabilityset"
@@ -1619,7 +1629,7 @@
 						"value": "infranode"
 					},
 					"vmStorageType": {
-						"value": "[variables('vmSizesMap')[variables('infraVmSize')].storageAccountType]"
+						"value": "[variables('vmSizesMap')[parameters('infraVmSize')].storageAccountType]"
 					},
 					"storageKind": {
 						"value": "[parameters('storageKind')]"
@@ -1776,7 +1786,7 @@
 						"value": "[parameters('adminUsername')]"
 					},
 					"vmSize": {
-						"value": "[variables('cnsVmSize')]"
+						"value": "[parameters('cnsVmSize')]"
 					},
 					"availabilitySet": {
 						"value": "cnsavailabilityset"
@@ -1794,7 +1804,7 @@
 						"value": "cnsnode"
 					},
 					"vmStorageType": {
-						"value": "[variables('vmSizesMap')[variables('cnsVmSize')].storageAccountType]"
+						"value": "[variables('vmSizesMap')[parameters('cnsVmSize')].storageAccountType]"
 					},
 					"storageKind": {
 						"value": "[parameters('storageKind')]"
