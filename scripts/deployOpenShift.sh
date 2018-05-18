@@ -68,8 +68,8 @@ then
 fi
 
 # Cloning Ansible playbook repository
-(cd /home/$SUDOUSER && git clone https://github.com/vincepower/openshift-container-platform-playbooks.git)
-#(cd /home/$SUDOUSER && git clone https://github.com/microsoft/openshift-container-platform-playbooks.git)
+#(cd /home/$SUDOUSER && git clone https://github.com/vincepower/openshift-container-platform-playbooks.git)
+(cd /home/$SUDOUSER && git clone https://github.com/microsoft/openshift-container-platform-playbooks.git)
 if [ -d /home/${SUDOUSER}/openshift-container-platform-playbooks ]
 then
     echo " - Retrieved playbooks successfully"
@@ -89,7 +89,7 @@ do
 $MASTER-$c openshift_node_labels=\"{'region': 'master', 'zone': 'default'}\" openshift_hostname=$MASTER-$c"
 done
 
-# Create Infra nodes grouping 
+# Create Infra nodes grouping
 echo $(date) " - Creating Infra nodes grouping"
 for (( c=0; c<$INFRACOUNT; c++ ))
 do
@@ -353,7 +353,7 @@ then
     echo $(date) " - Sleep for 60"
     sleep 60
 # End of Azure specific section
-fi 
+fi
 
 # Reconfigure glusterfs storage class
 if [ $CNS_DEFAULT_STORAGE == "true" ]
@@ -455,4 +455,3 @@ echo $(date) " - Sleep for 30"
 sleep 30
 
 echo $(date) " - Script complete"
-
