@@ -130,7 +130,6 @@ runuser -l $SUDOUSER -c "ansible-playbook ~/openshift-container-platform-playboo
 if [ $ENABLECNS == "true" ]
 then
     echo $(date) " - Creating glusterfs configuration"
-    export CLOUDKIND="openshift_cloudprovider_kind=glusterfs"
     export REGISTRYGLUSTER="openshift_hosted_registry_storage_kind=glusterfs"
 
     for (( c=0; c<$CNSCOUNT; c++ ))
@@ -149,6 +148,8 @@ fi
 if [[ $AZURE == "true" ]]
 then
     export CLOUDKIND="openshift_cloudprovider_kind=azure"
+else
+    export CLOUDKIND="openshift_cloudprovider_kind=none"
 fi
 
 # Create Ansible Hosts File
@@ -245,9 +246,6 @@ EOF
 
 if [[ $AZURE == "true" ]]
 then
-    # Setting the default openshift_cloudprovider_kind if Azure enabled
-    export CLOUDKIND="openshift_cloudprovider_kind=azure"
-
     # Create /etc/origin/cloudprovider/azure.conf on all hosts if Azure is enabled
     runuser $SUDOUSER -c "ansible-playbook -f 10 ~/openshift-container-platform-playbooks/create-azure-conf.yaml"
     if [ $? -eq 0 ]
