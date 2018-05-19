@@ -203,7 +203,7 @@
 			}, {
 				"name": "addressPrefix",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Address Range for the VirtualNetwork (default is 10.128.0.0/9)",
+				"label": "Address Range for the VirtualNetwork (default is 10.0.0.0/14)",
 				"toolTip": "Has to be an RFC 1918 address and will contain the master and node subnets.",
 				"constraints": {
 					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
@@ -213,7 +213,7 @@
 			}, {
 				"name": "masterSubnetPrefix",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Address Range for the subnet containing the master, infra, and cns nodes (default is 10.129.0.0/16)",
+				"label": "Address Range for the subnet containing the master, infra, and cns nodes (default is 10.1.0.0/16)",
 				"toolTip": "Needs to be at least 16 IP addresses and be follow RFC 1918.",
 				"constraints": {
 					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
@@ -223,7 +223,7 @@
 			}, {
 				"name": "nodeSubnetPrefix",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Address Range for the subnet containing all the compute nodes (default is 10.130.0.0/16)",
+				"label": "Address Range for the subnet containing all the compute nodes (default is 10.2.0.0/16)",
 				"toolTip": "Needs to be at least 32 IP addresses and be follow RFC 1918.",
 				"constraints": {
 					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",

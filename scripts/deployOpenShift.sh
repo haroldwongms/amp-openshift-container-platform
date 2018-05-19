@@ -148,8 +148,6 @@ fi
 if [[ $AZURE == "true" ]]
 then
     export CLOUDKIND="openshift_cloudprovider_kind=azure"
-else
-    export CLOUDKIND="openshift_cloudprovider_kind=none"
 fi
 
 # Create Ansible Hosts File
@@ -177,11 +175,11 @@ openshift_use_dnsmasq=true
 openshift_master_default_subdomain=$ROUTING
 openshift_override_hostname_check=true
 osm_use_cockpit=true
-os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
 openshift_master_api_port=443
 openshift_master_console_port=443
 osm_default_node_selector='region=app'
 openshift_disable_check=memory_availability,docker_image_availability
+os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
 $CLOUDKIND
 
 # default selectors for router and registry services
