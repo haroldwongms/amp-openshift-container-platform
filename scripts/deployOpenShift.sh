@@ -61,12 +61,6 @@ else
     export CLOUDNAME="AzurePublicCloud"
 fi
 
-# Setting the default openshift_cloudprovider_kind if Azure enabled
-if [[ $AZURE == "true" ]]
-then
-    export CLOUDKIND="openshift_cloudprovider_kind=azure"
-fi
-
 # Cloning Ansible playbook repository
 #(cd /home/$SUDOUSER && git clone https://github.com/vincepower/openshift-container-platform-playbooks.git)
 (cd /home/$SUDOUSER && git clone https://github.com/microsoft/openshift-container-platform-playbooks.git)
@@ -136,7 +130,8 @@ runuser -l $SUDOUSER -c "ansible-playbook ~/openshift-container-platform-playboo
 if [ $ENABLECNS == "true" ]
 then
     echo $(date) " - Creating glusterfs configuration"
-    registrygluster="openshift_hosted_registry_storage_kind=glusterfs"
+    export CLOUDKIND="openshift_cloudprovider_kind=glusterfs"
+    export REGISTRYGLUSTER="openshift_hosted_registry_storage_kind=glusterfs"
 
     for (( c=0; c<$CNSCOUNT; c++ ))
     do
@@ -148,6 +143,12 @@ then
         cnsglusterinfo="$cnsglusterinfo
 $CNS-$c glusterfs_devices='[ \"${drive1}\", \"${drive2}\", \"${drive3}\" ]'"
     done
+fi
+
+# Setting the default openshift_cloudprovider_kind if Azure enabled
+if [[ $AZURE == "true" ]]
+then
+    export CLOUDKIND="openshift_cloudprovider_kind=azure"
 fi
 
 # Create Ansible Hosts File
@@ -185,7 +186,7 @@ $CLOUDKIND
 # default selectors for router and registry services
 openshift_router_selector='region=infra'
 openshift_registry_selector='region=infra'
-$registrygluster
+$REGISTRYGLUSTER
 
 # Deploy Service Catalog
 openshift_enable_service_catalog=false
