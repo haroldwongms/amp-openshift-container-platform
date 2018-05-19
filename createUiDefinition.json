@@ -63,13 +63,15 @@
 				"label": "Master Node Size",
 				"toolTip": "The size of management nodes deployed in the OpenShift cluster.",
 				"recommendedSizes": [
+					"Standard_D4s_v3",
 					"Standard_E2s_v3",
-					"Standard_D4s_v3"
+					"Standard_E4s_v3"
 				],
 				"constraints": {
 					"allowedSizes": [
+						"Standard_D4s_v3",
 						"Standard_E2s_v3",
-						"Standard_D4s_v3"
+						"Standard_E4s_v3"
 					]
 				},
 				"options": {
@@ -89,14 +91,18 @@
 				"label": "Infrastructure Node Size",
 				"toolTip": "The size of infrastructure nodes deployed in the OpenShift cluster.",
 				"recommendedSizes": [
-					"Standard_D4s_v3",
+					"Standard_E2s_v3",
+					"Standard_E4s_v3",
 					"Standard_D2s_v3",
+					"Standard_D4s_v3",
 					"Standard_D8s_v3"
 				],
 				"constraints": {
 					"allowedSizes": [
-						"Standard_D4s_v3",
+						"Standard_E2s_v3",
+						"Standard_E4s_v3",
 						"Standard_D2s_v3",
+						"Standard_D4s_v3",
 						"Standard_D8s_v3"
 					]
 				},
@@ -128,8 +134,8 @@
 				"label": "Application Node Size",
 				"toolTip": "The size of nodes deployed to run applications in the OpenShift cluster.",
 				"recommendedSizes": [
-					"Standard_D4s_v3",
 					"Standard_D2s_v3",
+					"Standard_D4s_v3",
 					"Standard_E4s_v3",
 					"Standard_E16s_v3",
 					"Standard_F4s",
@@ -137,8 +143,8 @@
 				],
 				"constraints": {
 					"allowedSizes": [
-						"Standard_D4s_v3",
 						"Standard_D2s_v3",
+						"Standard_D4s_v3",
 						"Standard_E4s_v3",
 						"Standard_E16s_v3",
 						"Standard_F4s",
@@ -393,12 +399,18 @@
 				"label": "CNS Node Size",
 				"toolTip": "The size of nodes used to host Cloud Native Storage in the OpenShift cluster.",
 				"recommendedSizes": [
+					"Standard_E2s_v3",
 					"Standard_E4s_v3",
+					"Standard_D2s_v3",
+					"Standard_D4s_v3",
 					"Standard_D8s_v3"
 				],
 				"constraints": {
 					"allowedSizes": [
+						"Standard_E2s_v3",
 						"Standard_E4s_v3",
+						"Standard_D2s_v3",
+						"Standard_D4s_v3",
 						"Standard_D8s_v3"
 					]
 				},
