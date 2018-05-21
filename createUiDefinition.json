@@ -63,12 +63,14 @@
 				"label": "Master Node Size",
 				"toolTip": "The size of management nodes deployed in the OpenShift cluster.",
 				"recommendedSizes": [
+					"Standard_D2s_v3",
 					"Standard_D4s_v3",
 					"Standard_E2s_v3",
 					"Standard_E4s_v3"
 				],
 				"constraints": {
 					"allowedSizes": [
+						"Standard_D2s_v3",
 						"Standard_D4s_v3",
 						"Standard_E2s_v3",
 						"Standard_E4s_v3"
@@ -400,9 +402,9 @@
 				"toolTip": "The size of nodes used to host Cloud Native Storage in the OpenShift cluster.",
 				"recommendedSizes": [
 					"Standard_E2s_v3",
+					"Standard_D4s_v3",
 					"Standard_E4s_v3",
 					"Standard_D2s_v3",
-					"Standard_D4s_v3",
 					"Standard_D8s_v3"
 				],
 				"constraints": {
