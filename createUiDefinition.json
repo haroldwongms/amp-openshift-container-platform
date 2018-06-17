@@ -83,7 +83,7 @@
 				"imageReference": {
 					"publisher": "redhat",
 					"offer": "rhel-ocp-marketplace",
-					"sku": "rhel74"
+					"sku": "rhel75"
 				},
 				"count": "3",
 				"visible": true
@@ -115,7 +115,7 @@
 				"imageReference": {
 					"publisher": "redhat",
 					"offer": "rhel-ocp-marketplace",
-					"sku": "rhel74"
+					"sku": "rhel75"
 				},
 				"count": "3",
 				"visible": true
@@ -160,7 +160,7 @@
 				"imageReference": {
 					"publisher": "redhat",
 					"offer": "rhel-ocp-marketplace",
-					"sku": "rhel74"
+					"sku": "rhel75"
 				},
 				"count": "[steps('infrastructureSettings').nodeInstanceCount]",
 				"visible": true
@@ -186,7 +186,7 @@
 				"imageReference": {
 					"publisher": "redhat",
 					"offer": "rhel-ocp-marketplace",
-					"sku": "rhel74"
+					"sku": "rhel75"
 				},
 				"count": "1",
 				"visible": true
@@ -423,7 +423,7 @@
 				"imageReference": {
 					"publisher": "redhat",
 					"offer": "rhel-ocp-marketplace",
-					"sku": "rhel74"
+					"sku": "rhel75"
 				},
 				"count": "3",
 				"visible": "[equals(steps('additionalSettings').enableCNS, 'true')]"
