@@ -182,6 +182,11 @@ openshift_disable_check=memory_availability,docker_image_availability
 os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
 $CLOUDKIND
 
+# Workaround for docker image failure
+# https://access.redhat.com/solutions/3480921
+oreg_url=registry.access.redhat.com/openshift3/ose-${component}:${version}
+openshift_examples_modify_imagestreams=true
+
 # default selectors for router and registry services
 openshift_router_selector='region=infra'
 openshift_registry_selector='region=infra'
