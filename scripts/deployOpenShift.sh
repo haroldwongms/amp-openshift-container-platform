@@ -180,10 +180,13 @@ openshift_master_console_port=443
 osm_default_node_selector='region=app'
 openshift_disable_check=memory_availability,docker_image_availability
 os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
+openshift_storage_glusterfs_timeout=900
 $CLOUDKIND
 
 # Workaround for docker image failure
 # https://access.redhat.com/solutions/3480921
+oreg_url_master=registry.access.redhat.com/openshift3/ose-\${component}:\${version}
+oreg_url_node=registry.access.redhat.com/openshift3/ose-\${component}:\${version}
 oreg_url=registry.access.redhat.com/openshift3/ose-\${component}:\${version}
 openshift_examples_modify_imagestreams=true
 
