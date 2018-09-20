@@ -56,6 +56,12 @@
 				"description": "VM Hostname"
 			}
 		},
+		"plan": {
+			"type": "object",
+			"metadata": {
+				"description": "Plan"
+			}
+		},
 		"unmanagedOsDiskUri": {
 			"type": "string",
 			"metadata": {
@@ -120,12 +126,6 @@
 			"type": "object",
 			"metadata": {
 				"description": "Image Reference"
-			}
-		},
-		"plan": {
-			"type": "object",
-			"metadata": {
-				"description": "Plan"
 			}
 		},
 		"redHatTags": {
@@ -236,10 +236,10 @@
 		"apiVersion": "[parameters('apiVersionCompute')]",
 		"tags": {
 			"Role": "[parameters('role')]",
-			"provider": "[parameters('redHatTags').provider]",
-			"app": "[parameters('redHatTags').app]",
-			"version": "[parameters('redHatTags').version]",
-			"platform": "[parameters('redHatTags').platform]"
+				"provider": "[parameters('redHatTags').provider]",
+				"app": "[parameters('redHatTags').app]",
+				"version": "[parameters('redHatTags').version]",
+				"platform": "[parameters('redHatTags').platform]"
 		},
 		"plan": "[parameters('plan')]",
 		"properties": {

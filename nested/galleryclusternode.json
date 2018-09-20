@@ -182,10 +182,10 @@
 		"apiVersion": "[parameters('apiVersionCompute')]",
 		"tags": {
 			"Role": "[parameters('role')]",
-			"provider": "[parameters('redHatTags').provider]",
-			"app": "[parameters('redHatTags').app]",
-			"version": "[parameters('redHatTags').version]",
-			"platform": "[parameters('redHatTags').platform]"
+				"provider": "[parameters('redHatTags').provider]",
+				"app": "[parameters('redHatTags').app]",
+				"version": "[parameters('redHatTags').version]",
+				"platform": "[parameters('redHatTags').platform]"
 		},
 		"plan": "[parameters('plan')]",
 		"properties": {
