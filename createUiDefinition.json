@@ -191,25 +191,140 @@
 				"count": "1",
 				"visible": true
 			}, {
-				"name": "customIPrange",
+				"name": "defaultOrCustomVNet",
 				"type": "Microsoft.Common.OptionsGroup",
-				"label": "Custom IP Subnet",
-				"defaultValue": "No",
-				"toolTip": "Configure custom IP range for the VirtualNetwork and its subnets (default are in 10.0.0.0/14).",
+				"label": "Chosing the default or to customiz the Virtual Network",
+				"defaultValue": "default",
+				"toolTip": "The default VirtualNetwork this offer will create subnets use IPs in the range 10.0.0.0/14 range.",
 				"constraints": {
 					"allowedValues": [
 						{
-						"label": "Yes",
-						"value": "true"
+						"label": "Default Settings",
+						"value": "default"
 						},
 						{
-						"label": "No",
-						"value": "false"
+						"label": "Customized",
+						"value": "custom"
 						}
 					]
 				}
 			}, {
-				"name": "addressPrefix",
+				"name": "virtualNetworkNewOrExisting",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "New or Existing Virtual Network",
+				"defaultValue": "new",
+				"toolTip": "By defaut new will bet setup with subnets in the 10.0.0.0/14 range. If you chose existing you will need to have both the name of the existing Virtual Network and the resource group it is in.",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "New",
+						"value": "new"
+						},
+						{
+						"label": "Existing",
+						"value": "existing"
+						}
+					]
+				},
+				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'custom')]"
+			}, {
+				"name": "virtualNetworkName",
+				"type": "Microsoft.Network.VirtualNetworkCombo",
+				"label": {
+					"virtualNetwork": "Virtual Network",
+					"subnets": "Subnets"
+				},
+				"toolTip": {
+					"virtualNetwork": "Name for the new Virtual Network",
+					"subnets": "Names for the two required Subnets"
+				},
+				"defaultValue": {
+					"name": "openshiftvnet",
+					"addressPrefixSize": "/16"
+				},
+				"constraints": {
+					"minAddressPrefixSize": "/26"
+				},
+				"options": {
+					"hideExisting": false
+				},
+				"subnets": {
+					"subnet1": {
+						"label": "Master Nodes Subnet",
+						"defaultValue": {
+							"name": "mastersubnet",
+							"addressPrefixSize": "/24"
+						},
+						"constraints": {
+							"minAddressPrefixSize": "/27",
+							"minAddressCount": 8,
+							"requireContiguousAddresses": true
+						}
+					},
+					"subnet2": {
+						"label": "Infra Nodes Subnet",
+						"defaultValue": {
+							"name": "infrasubnet",
+							"addressPrefixSize": "/24"
+						},
+						"constraints": {
+							"minAddressPrefixSize": "/27",
+							"minAddressCount": 8,
+							"requireContiguousAddresses": true
+						}
+					},
+					"subnet3": {
+						"label": "Compute and Storage Nodes Subnet",
+						"defaultValue": {
+							"name": "nodesubnet",
+							"addressPrefixSize": "/24"
+						},
+						"constraints": {
+							"minAddressPrefixSize": "/27",
+							"minAddressCount": 8,
+							"requireContiguousAddresses": true
+						}
+					}
+				},
+				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'custom')]"
+			}, {
+				"name": "virtualNetworkResourceGroupName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "virtualNetworkResourceGroupName"
+			}, {
+				"name": "virtualNetworkName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "virtualNetworkName"
+			}, {
+				"name": "addressPrefixes",
+				"type": "Microsoft.Common.TextBox",
+				"label": "addressPrefixes"
+			}, {
+				"name": "masterSubnetPrefix",
+				"type": "Microsoft.Common.TextBox",
+				"label": "masterSubnetPrefix"
+			}, {
+				"name": "masterSubnetName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "masterSubnetName"
+			}, {
+				"name": "infraSubnetPrefix",
+				"type": "Microsoft.Common.TextBox",
+				"label": "infraSubnetPrefix"
+			}, {
+				"name": "infraSubnetName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "infraSubnetName"
+			}, {
+				"name": "nodeSubnetPrefix",
+				"type": "Microsoft.Common.TextBox",
+				"label": "nodeSubnetPrefix"
+			}, {
+				"name": "nodeSubnetName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "nodeSubnetName"
+			}, {
+				"name": "addressPrefixes",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Address Range for the VirtualNetwork (default is 10.0.0.0/14)",
 				"toolTip": "Has to be an RFC 1918 address and will contain the master and node subnets.",
@@ -320,6 +435,16 @@
 				"type": "Microsoft.Common.TextBox",
 				"label": "Red Hat Subscription Manager OpenShift Pool ID",
 				"toolTip": "The Pool ID that contains OpenShift Container Platform entitlement. Ensure you have enough entitlements of OpenShift Container Platform for the installation of the cluster.",
+				"constraints": {
+					"required": true,
+					"regex": "^[a-fA-F0-9]{1,64}$",
+					"validationMessage": "Pool IDs can only contain hexadecimal values."
+				}
+			}, {
+				"name": "rhsmBrokerPoolId",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Red Hat Subscription Manager OpenShift Pool ID for Broker / Master Nodes",
+				"toolTip": "Red Hat Subscription Manager Pool ID with OpenShift entitlements for Broker / Master Nodes. If not using this, enter the Pool ID for Application Nodes. To find it, run on registered server: subscription-manager list",
 				"constraints": {
 					"required": true,
 					"regex": "^[a-fA-F0-9]{1,64}$",
@@ -500,9 +625,6 @@
 			"nodeInstanceCount": "[int(steps('infrastructureSettings').nodeInstanceCount)]",
 			"nodeVmSize": "[steps('infrastructureSettings').nodeVmSize]",
 			"openshiftClusterPrefix": "[steps('infrastructureSettings').openshiftClusterPrefix]",
-			"addressPrefix": "[steps('infrastructureSettings').addressPrefix]",
-			"masterSubnetPrefix": "[steps('infrastructureSettings').masterSubnetPrefix]",
-			"nodeSubnetPrefix": "[steps('infrastructureSettings').nodeSubnetPrefix]",
 			"keyVaultResourceGroup": "[steps('infrastructureSettings').keyVaultResourceGroup]",
 			"keyVaultName": "[steps('infrastructureSettings').keyVaultName]",
 			"keyVaultSecret": "[steps('infrastructureSettings').keyVaultSecret]",
@@ -511,6 +633,7 @@
 			"rhsmUsernameOrOrgId": "[steps('openShiftSettings').rhsmUsername]",
 			"rhsmPasswordOrActivationKey": "[steps('openShiftSettings').rhsmPassword]",
 			"rhsmPoolId": "[steps('openShiftSettings').rhsmPoolId]",
+			"rhsmBrokerPoolId": "[steps('openShiftSettings').rhsmBrokerPoolId]",
 			"enableAzure": "[steps('openShiftSettings').enableAzure]",
 			"aadClientId": "[steps('openShiftSettings').aadClientId]",
 			"aadClientSecret": "[steps('openShiftSettings').aadClientSecret]",
@@ -518,7 +641,17 @@
 			"enableLogging": "[steps('additionalSettings').enableLogging]",
 			"enableMetrics": "[steps('additionalSettings').enableMetrics]",
 			"defaultSubDomainType": "[steps('additionalSettings').defaultSubDomainType]",
-			"defaultSubDomain": "[steps('additionalSettings').defaultSubDomain]"
+			"defaultSubDomain": "[steps('additionalSettings').defaultSubDomain]",
+			"virtualNetworkNewOrExisting": "[steps('infrastructureSettings').virtualNetworkNewOrExisting]",
+			"virtualNetworkResourceGroupName": "[steps('infrastructureSettings').virtualNetworkResourceGroupName]",
+			"virtualNetworkName": "[steps('infrastructureSettings').virtualNetworkName]",
+			"addressPrefixes": "[steps('infrastructureSettings').addressPrefixes]",
+			"masterSubnetPrefix": "[steps('infrastructureSettings').masterSubnetPrefix]",
+			"masterSubnetName": "[steps('infrastructureSettings').masterSubnetName]",
+			"infraSubnetPrefix": "[steps('infrastructureSettings').infraSubnetPrefix]",
+			"infraSubnetName": "[steps('infrastructureSettings').infraSubnetName]",
+			"nodeSubnetPrefix": "[steps('infrastructureSettings').nodeSubnetPrefix]",
+			"nodeSubnetName": "[steps('infrastructureSettings').nodeSubnetName]"
 		}
 	}
 }
