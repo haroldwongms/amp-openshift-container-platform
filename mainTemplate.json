@@ -278,6 +278,8 @@
 	"variables": {
 		"masterInstanceCount": 3,
 		"infraInstanceCount": 3,
+		"masterClusterType": "public",
+		"routerClusterType": "public",
 		"masterSubnetName": "mastersubnet",
 		"infraSubnetName": "infrasubnet",
 		"nodeSubnetName": "nodesubnet",
@@ -2230,6 +2232,12 @@
 					},
 					"virtualNetworkName": {
 						"value": "[parameters('virtualNetworkName')]"
+					},
+					"masterClusterType": {
+						"value": "[variables('masterClusterType')]"
+					},
+					"routerClusterType": {
+						"value": "[variables('routerClusterType')]"
 					},
 					"nodeNetworkSecurityGroup": {
 						"value": "[concat(variables('openshiftNodeHostname'), '-nsg')]"
