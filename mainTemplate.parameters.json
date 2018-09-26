@@ -44,6 +44,9 @@
                 "rhsmPoolId": {
                         "value": "SUBSCRIPTION-POOL-ID"
                 },
+                "rhsmBrokerPoolId": {
+                        "value": "BROKER-SUBSCRIPTION-POOL-ID"
+                },
                 "sshPublicKey": {
 			"value": "GEN-SSH-PUB-KEY"
                 },
@@ -74,14 +77,23 @@
 		"defaultSubDomain": {
 			"value": "domain.com"
 		},
+                "virtualNetworkNewOrExisting": {
+                        "values": "new"
+                },
+                "virtualNetworkName": {
+                        "value": "openshiftvnet"
+                },
 		"addressPrefix": {
 			"value": "10.0.0.0/8"
 		},
 		"masterSubnetPrefix": {
 			"value": "10.1.0.0/16"
 		},
-		"nodeSubnetPrefix": {
+		"infraSubnetPrefix": {
 			"value": "10.2.0.0/16"
+		},
+		"nodeSubnetPrefix": {
+			"value": "10.3.0.0/16"
 		}
         }
 }

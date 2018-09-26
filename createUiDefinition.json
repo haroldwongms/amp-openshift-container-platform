@@ -579,11 +579,8 @@
 			"virtualNetworkName": "[steps('infrastructureSettings').virtualNetworkName]",
 			"addressPrefixes": "[steps('infrastructureSettings').addressPrefixes]",
 			"masterSubnetPrefix": "[steps('infrastructureSettings').masterSubnetPrefix]",
-			"masterSubnetName": "[steps('infrastructureSettings').masterSubnetName]",
 			"infraSubnetPrefix": "[steps('infrastructureSettings').infraSubnetPrefix]",
-			"infraSubnetName": "[steps('infrastructureSettings').infraSubnetName]",
-			"nodeSubnetPrefix": "[steps('infrastructureSettings').nodeSubnetPrefix]",
-			"nodeSubnetName": "[steps('infrastructureSettings').nodeSubnetName]"
+			"nodeSubnetPrefix": "[steps('infrastructureSettings').nodeSubnetPrefix]"
 		}
 	}
 }
