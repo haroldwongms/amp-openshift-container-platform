@@ -253,13 +253,6 @@
 				"description": "Address prefix of the virtual network"
 			}
 		},
-		"masterSubnetName": {
-			"type": "string",
-			"defaultValue": "mastersubnet",
-			"metadata": {
-				"description": "Name of the subnet"
-			}
-		},
 		"masterSubnetPrefix": {
 			"type": "string",
 			"defaultValue": "10.1.0.0/16",
@@ -267,25 +260,11 @@
 				"description": "Base subnet used for the master servers, and needs to be a subset of the addressPrefix - default is 10.1.0.0/16"
 			}
 		},
-		"infraSubnetName": {
-			"type": "string",
-			"defaultValue": "infrasubnet",
-			"metadata": {
-				"description": "Name of the subnet"
-			}
-		},
 		"infraSubnetPrefix": {
 			"type": "string",
 			"defaultValue": "10.2.0.0/16",
 			"metadata": {
 				"description": "Base subnet used for the infra servers, and needs to be a subset of the addressPrefix - default is 10.2.0.0/16"
-			}
-		},
-		"nodeSubnetName": {
-			"type": "string",
-			"defaultValue": "nodesubnet",
-			"metadata": {
-				"description": "Name of the subnet"
 			}
 		},
 		"nodeSubnetPrefix": {
@@ -299,6 +278,9 @@
 	"variables": {
 		"masterInstanceCount": 3,
 		"infraInstanceCount": 3,
+		"masterSubnetName": "mastersubnet",
+		"infraSubnetName": "infrasubnet",
+		"nodeSubnetName": "nodesubnet",
 		"nodeInstanceCount": "[int(parameters('nodeInstanceCount'))]",
 		"storageKind": "managed",
 		"resourceGroupName": "[resourceGroup().id]",
@@ -1073,17 +1055,17 @@
 					"dnsServers": []
 				},
 				"subnets": [{
-					"name": "[parameters('masterSubnetName')]",
+					"name": "[variables('masterSubnetName')]",
 					"properties": {
 						"addressPrefix": "[parameters('masterSubnetPrefix')]"
 					}
 				}, {
-					"name": "[parameters('infraSubnetName')]",
+					"name": "[variables('infraSubnetName')]",
 					"properties": {
 						"addressPrefix": "[parameters('infraSubnetPrefix')]"
 					}
 				}, {
-					"name": "[parameters('nodeSubnetName')]",
+					"name": "[variables('nodeSubnetName')]",
 					"properties": {
 						"addressPrefix": "[parameters('nodeSubnetPrefix')]"
 					}
@@ -1418,7 +1400,7 @@
 					"properties": {
 						"privateIPAllocationMethod": "Dynamic",
 						"subnet": {
-							"id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('masterSubnetName'))]"
+							"id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), variables('masterSubnetName'))]"
 						},
 						"loadBalancerBackendAddressPools": [{
 							"id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('masterLoadBalancerName'), '/backendAddressPools/loadBalancerBackEnd')]"
@@ -1455,7 +1437,7 @@
 					"properties": {
 						"privateIPAllocationMethod": "Dynamic",
 						"subnet": {
-							"id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('infraSubnetName'))]"
+							"id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), variables('infraSubnetName'))]"
 						},
 						"loadBalancerBackendAddressPools": [{
 							"id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('infraLoadBalancerName'), '/backendAddressPools/loadBalancerBackEnd')]"
@@ -1494,7 +1476,7 @@
 					"properties": {
 						"privateIPAllocationMethod": "Dynamic",
 						"subnet": {
-							"id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('nodeSubnetName'))]"
+							"id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), variables('nodeSubnetName'))]"
 						}
 					}
 				}],
@@ -1529,7 +1511,7 @@
 					"properties": {
 						"privateIPAllocationMethod": "Dynamic",
 						"subnet": {
-							"id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('nodeSubnetName'))]"
+							"id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), variables('nodeSubnetName'))]"
 						}
 					}
 				}],

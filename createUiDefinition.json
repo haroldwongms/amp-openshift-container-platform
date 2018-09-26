@@ -193,31 +193,13 @@
 			}, {
 				"name": "defaultOrCustomVNet",
 				"type": "Microsoft.Common.OptionsGroup",
-				"label": "Chosing the default or to customiz the Virtual Network",
-				"defaultValue": "default",
-				"toolTip": "The default VirtualNetwork this offer will create subnets use IPs in the range 10.0.0.0/14 range.",
-				"constraints": {
-					"allowedValues": [
-						{
-						"label": "Default Settings",
-						"value": "default"
-						},
-						{
-						"label": "Customized",
-						"value": "custom"
-						}
-					]
-				}
-			}, {
-				"name": "virtualNetworkNewOrExisting",
-				"type": "Microsoft.Common.OptionsGroup",
 				"label": "New or Existing Virtual Network",
 				"defaultValue": "new",
 				"toolTip": "By defaut new will bet setup with subnets in the 10.0.0.0/14 range. If you chose existing you will need to have both the name of the existing Virtual Network and the resource group it is in.",
 				"constraints": {
 					"allowedValues": [
 						{
-						"label": "New",
+						"label": "new",
 						"value": "new"
 						},
 						{
@@ -225,134 +207,84 @@
 						"value": "existing"
 						}
 					]
-				},
-				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'custom')]"
+				}
 			}, {
 				"name": "virtualNetworkName",
-				"type": "Microsoft.Network.VirtualNetworkCombo",
-				"label": {
-					"virtualNetwork": "Virtual Network",
-					"subnets": "Subnets"
-				},
-				"toolTip": {
-					"virtualNetwork": "Name for the new Virtual Network",
-					"subnets": "Names for the two required Subnets"
-				},
-				"defaultValue": {
-					"name": "openshiftvnet",
-					"addressPrefixSize": "/16"
-				},
+				"type": "Microsoft.Common.TextBox",
+				"label": "Existing Virtual Network Name"
 				"constraints": {
-					"minAddressPrefixSize": "/26"
+					"required": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]",
+					"regex": "^[a-z0-9A-Z-_]{1,90}$"
 				},
-				"options": {
-					"hideExisting": false
-				},
-				"subnets": {
-					"subnet1": {
-						"label": "Master Nodes Subnet",
-						"defaultValue": {
-							"name": "mastersubnet",
-							"addressPrefixSize": "/24"
-						},
-						"constraints": {
-							"minAddressPrefixSize": "/27",
-							"minAddressCount": 8,
-							"requireContiguousAddresses": true
-						}
-					},
-					"subnet2": {
-						"label": "Infra Nodes Subnet",
-						"defaultValue": {
-							"name": "infrasubnet",
-							"addressPrefixSize": "/24"
-						},
-						"constraints": {
-							"minAddressPrefixSize": "/27",
-							"minAddressCount": 8,
-							"requireContiguousAddresses": true
-						}
-					},
-					"subnet3": {
-						"label": "Compute and Storage Nodes Subnet",
-						"defaultValue": {
-							"name": "nodesubnet",
-							"addressPrefixSize": "/24"
-						},
-						"constraints": {
-							"minAddressPrefixSize": "/27",
-							"minAddressCount": 8,
-							"requireContiguousAddresses": true
-						}
-					}
-				},
-				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'custom')]"
+				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]"
 			}, {
 				"name": "virtualNetworkResourceGroupName",
 				"type": "Microsoft.Common.TextBox",
-				"label": "virtualNetworkResourceGroupName"
+				"label": "Resource Group for the existing Virtual Network"
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]",
+					"regex": "^[a-z0-9A-Z-_]{1,90}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]"
 			}, {
-				"name": "virtualNetworkName",
-				"type": "Microsoft.Common.TextBox",
-				"label": "virtualNetworkName"
-			}, {
-				"name": "addressPrefixes",
-				"type": "Microsoft.Common.TextBox",
-				"label": "addressPrefixes"
-			}, {
-				"name": "masterSubnetPrefix",
-				"type": "Microsoft.Common.TextBox",
-				"label": "masterSubnetPrefix"
-			}, {
-				"name": "masterSubnetName",
-				"type": "Microsoft.Common.TextBox",
-				"label": "masterSubnetName"
-			}, {
-				"name": "infraSubnetPrefix",
-				"type": "Microsoft.Common.TextBox",
-				"label": "infraSubnetPrefix"
-			}, {
-				"name": "infraSubnetName",
-				"type": "Microsoft.Common.TextBox",
-				"label": "infraSubnetName"
-			}, {
-				"name": "nodeSubnetPrefix",
-				"type": "Microsoft.Common.TextBox",
-				"label": "nodeSubnetPrefix"
-			}, {
-				"name": "nodeSubnetName",
-				"type": "Microsoft.Common.TextBox",
-				"label": "nodeSubnetName"
+				"name": "customIPrange",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "Chosing the default or to customize the Virtual Network",
+				"defaultValue": "false",
+				"toolTip": "The default VirtualNetwork this offer will create subnets use IPs in the range 10.0.0.0/14 range.",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "Default Settings",
+						"value": "false"
+						},
+						{
+						"label": "Customized",
+						"value": "true"
+						}
+					]
+				},
+				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'new')]"
 			}, {
 				"name": "addressPrefixes",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Address Range for the VirtualNetwork (default is 10.0.0.0/14)",
 				"toolTip": "Has to be an RFC 1918 address and will contain the master and node subnets.",
 				"constraints": {
-					"required": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'custom')]",
+					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
 					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
 				},
-				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'custom')]"
+				"visible": "[equals(steps('infrastructureSettings').customIPrange, 'true')]"
 			}, {
 				"name": "masterSubnetPrefix",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Address Range for the subnet containing the master, infra, and cns nodes (default is 10.1.0.0/16)",
 				"toolTip": "Needs to be at least 16 IP addresses and be follow RFC 1918.",
 				"constraints": {
-					"required": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'custom')]",
+					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
 					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
 				},
-				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'custom')]"
+				"visible": "[equals(steps('infrastructureSettings').customIPrange, 'true')]"
+			}, {
+				"name": "infraSubnetPrefix",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Address Range for the subnet containing all the infrastructure nodes (default is 10.2.0.0/16)",
+				"toolTip": "Needs to be at least 32 IP addresses and be follow RFC 1918.",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
+					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').customIPrange, 'true')]"
 			}, {
 				"name": "nodeSubnetPrefix",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Address Range for the subnet containing all the compute nodes (default is 10.2.0.0/16)",
+				"label": "Address Range for the subnet containing all the cns and compute nodes (default is 10.3.0.0/16)",
 				"toolTip": "Needs to be at least 32 IP addresses and be follow RFC 1918.",
 				"constraints": {
-					"required": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'custom')]",
+					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
 					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
 				},
-				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'custom')]"
+				"visible": "[equals(steps('infrastructureSettings').customIPrange, 'true')]"
 			}, {
 				"name": "keyVaultResourceGroup",
 				"type": "Microsoft.Common.TextBox",
