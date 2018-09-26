@@ -278,8 +278,6 @@
 	"variables": {
 		"masterInstanceCount": 3,
 		"infraInstanceCount": 3,
-		"masterClusterType": "public",
-		"routerClusterType": "public",
 		"masterSubnetName": "mastersubnet",
 		"infraSubnetName": "infrasubnet",
 		"nodeSubnetName": "nodesubnet",
@@ -397,6 +395,13 @@
 		"masterLbBackendPoolId": "[concat(variables('masterLbId'),'/backendAddressPools/loadBalancerBackend')]",
 		"masterLbHttpProbeId": "[concat(variables('masterLbId'),'/probes/httpProbe')]",
 		"masterLb443ProbeId": "[concat(variables('masterLbId'),'/probes/443Probe')]",
+
+		"masterClusterType": "public",
+		"masterPrivateClusterIp": "10.1.0.200",
+		"masterPrivateClusterDns": "internalmaster.net",
+		"masterPublicIpName": "[variables('openshiftMasterPublicIpDnsLabel')]",
+		"routerClusterType": "public",
+		"routerPublicIpName": "10.1.0.201",
 
 		"infraLoadBalancerName": "[concat(variables('openshiftInfraHostname'), 'lb')]",
 		"infraPublicIpAddressId": "[resourceId('Microsoft.Network/publicIPAddresses', variables('infraLbPublicIpDnsLabel'))]",
@@ -2233,17 +2238,29 @@
 					"virtualNetworkName": {
 						"value": "[parameters('virtualNetworkName')]"
 					},
-					"masterClusterType": {
-						"value": "[variables('masterClusterType')]"
-					},
-					"routerClusterType": {
-						"value": "[variables('routerClusterType')]"
-					},
 					"nodeNetworkSecurityGroup": {
 						"value": "[concat(variables('openshiftNodeHostname'), '-nsg')]"
 					},
 					"nodeAvailabilitySet": {
 						"value": "nodeavailabilityset"
+					},
+					"masterClusterType": {
+						"value": "[variables('masterClusterType')]"
+					},
+					"masterPrivateClusterIp": {
+						"value": "[variables('masterPrivateClusterIp')]"
+					},
+					"masterPrivateClusterDns": {
+						"value": "[variables('masterPrivateClusterDns')]"
+					},
+					"masterPublicIpName": {
+						"value": "[variables('openshiftMasterPublicIpDnsLabel')]"
+					},
+					"routerClusterType": {
+						"value": "[variables('routerClusterType')]"
+					},
+					"routerPublicIpName": {
+						"value": "[variables('infraLbPublicIpDnsLabel')]"
 					}
 				}
 			}
