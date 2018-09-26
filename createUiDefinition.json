@@ -211,7 +211,7 @@
 			}, {
 				"name": "virtualNetworkName",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Existing Virtual Network Name"
+				"label": "Existing Virtual Network Name",
 				"constraints": {
 					"required": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]",
 					"regex": "^[a-z0-9A-Z-_]{1,90}$"
@@ -220,7 +220,7 @@
 			}, {
 				"name": "virtualNetworkResourceGroupName",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Resource Group for the existing Virtual Network"
+				"label": "Resource Group for the existing Virtual Network",
 				"constraints": {
 					"required": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]",
 					"regex": "^[a-z0-9A-Z-_]{1,90}$"
