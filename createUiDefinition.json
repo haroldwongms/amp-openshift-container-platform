@@ -218,9 +218,40 @@
 				},
 				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]"
 			}, {
+				"name": "masterSubnetName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Subnet name for master nodes",
+				"toolTip": "The subnet which will be used to host the master nodes within the existing Virtual Network.",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]",
+					"regex": "^[a-z0-9A-Z-_]{1,90}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]"
+			}, {
+				"name": "infraSubnetName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Subnet name for infra nodes",
+				"toolTip": "The subnet which will be used to host the infrastructure nodes within the existing Virtual Network.",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]",
+					"regex": "^[a-z0-9A-Z-_]{1,90}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]"
+			}, {
+				"name": "nodeSubnetName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Subnet name for compute and cns nodes",
+				"toolTip": "The subnet which will be used to host the compute and cns nodes within the existing Virtual Network.",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]",
+					"regex": "^[a-z0-9A-Z-_]{1,90}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]"
+			}, {
 				"name": "virtualNetworkResourceGroupName",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Resource Group for the existing Virtual Network",
+				"toolTip": "The resource group where the existing virtual network resides.",
 				"constraints": {
 					"required": "[equals(steps('infrastructureSettings').defaultOrCustomVNet, 'existing')]",
 					"regex": "^[a-z0-9A-Z-_]{1,90}$"
