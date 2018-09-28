@@ -194,7 +194,7 @@
 				"name": "virtualNetworkNewOrExisting",
 				"type": "Microsoft.Common.OptionsGroup",
 				"label": "New or Existing Virtual Network",
-				"defaultValue": "New",
+				"defaultValue": "new",
 				"toolTip": "By defaut new will bet setup with subnets in the 10.0.0.0/14 range. If you chose existing you will need to have both the name of the existing Virtual Network and the resource group it is in.",
 				"constraints": {
 					"allowedValues": [
