@@ -191,15 +191,15 @@
 				"count": "1",
 				"visible": true
 			}, {
-				"name": "defaultOrCustomVNet",
+				"name": "virtualNetworkNewOrExisting",
 				"type": "Microsoft.Common.OptionsGroup",
 				"label": "New or Existing Virtual Network",
-				"defaultValue": "new",
+				"defaultValue": "New",
 				"toolTip": "By defaut new will bet setup with subnets in the 10.0.0.0/14 range. If you chose existing you will need to have both the name of the existing Virtual Network and the resource group it is in.",
 				"constraints": {
 					"allowedValues": [
 						{
-						"label": "new",
+						"label": "New",
 						"value": "new"
 						},
 						{
@@ -261,7 +261,7 @@
 				"name": "customIPrange",
 				"type": "Microsoft.Common.OptionsGroup",
 				"label": "Chosing the default or to customize the Virtual Network",
-				"defaultValue": "false",
+				"defaultValue": "Default Settings",
 				"toolTip": "The default VirtualNetwork this offer will create subnets use IPs in the range 10.0.0.0/14 range.",
 				"constraints": {
 					"allowedValues": [
@@ -610,8 +610,11 @@
 			"virtualNetworkName": "[steps('infrastructureSettings').virtualNetworkName]",
 			"addressPrefixes": "[steps('infrastructureSettings').addressPrefixes]",
 			"masterSubnetPrefix": "[steps('infrastructureSettings').masterSubnetPrefix]",
+			"masterSubnetName": "[steps('infrastructureSettings').masterSubnetName]",
 			"infraSubnetPrefix": "[steps('infrastructureSettings').infraSubnetPrefix]",
-			"nodeSubnetPrefix": "[steps('infrastructureSettings').nodeSubnetPrefix]"
+			"infraSubnetName": "[steps('infrastructureSettings').infraSubnetName]",
+			"nodeSubnetPrefix": "[steps('infrastructureSettings').nodeSubnetPrefix]",
+			"nodeSubnetName": "[steps('infrastructureSettings').nodeSubnetName]"
 		}
 	}
 }
