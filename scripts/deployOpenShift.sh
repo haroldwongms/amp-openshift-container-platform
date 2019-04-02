@@ -4,549 +4,189 @@ echo $(date) " - Starting Script"
 
 set -e
 
-SUDOUSER=$1
-PASSWORD="$2"
-PRIVATEKEY=$3
-MASTER=$4
-MASTERPUBLICIPHOSTNAME=$5
-MASTERPUBLICIPADDRESS=$6
-INFRA=$7
-NODE=$8
-NODECOUNT=$9
-INFRACOUNT=${10}
-MASTERCOUNT=${11}
-ROUTING=${12}
-REGISTRYSA=${13}
-REGSAKEY="${14}"
-TENANTID=${15}
-SUBSCRIPTIONID=${16}
-AZURE=${17}
-AADCLIENTID=${18}
-AADCLIENTSECRET="${19}"
-RESOURCEGROUP=${20}
-LOCATION=${21}
-STORAGEACCOUNT1=${22}
-SAKEY1=${23}
+export SUDOUSER=$1
+export PASSWORD="$2"
+export MASTER=$3
+export MASTERPUBLICIPHOSTNAME=$4
+export MASTERPUBLICIPADDRESS=$5
+export INFRA=$6
+export NODE=$7
+export NODECOUNT=$8
+export INFRACOUNT=$9
+export MASTERCOUNT=${10}
+export ROUTING=${11}
+export REGISTRYSA=${12}
+export ACCOUNTKEY="${13}"
+export METRICS=${14}
+export LOGGING=${15}
+export TENANTID=${16}
+export SUBSCRIPTIONID=${17}
+export AADCLIENTID=${18}
+export AADCLIENTSECRET="${19}"
+export RESOURCEGROUP=${20}
+export LOCATION=${21}
+export AZURE=${22}
+export STORAGEKIND=${23}
+export ENABLECNS=${24}
+export CNS=${25}
+export CNSCOUNT=${26}
+export VNETNAME=${27}
+export NODENSG=${28}
+export NODEAVAILIBILITYSET=${29}
 
-BASTION=$(hostname)
+export BASTION=$(hostname)
+
+# Set CNS to default storage type.  Will be overridden later if Azure is true
+export CNS_DEFAULT_STORAGE=true
+
+# Setting DOMAIN variable
+export DOMAIN=`domainname -d`
 
 # Determine if Commercial Azure or Azure Government
 CLOUD=$( curl -H Metadata:true "http://169.254.169.254/metadata/instance/compute/location?api-version=2017-04-02&format=text" | cut -c 1-2 )
-CLOUD=${CLOUD^^}
+export CLOUD=${CLOUD^^}
 
-MASTERLOOP=$((MASTERCOUNT - 1))
-INFRALOOP=$((INFRACOUNT - 1))
-NODELOOP=$((NODECOUNT - 1))
+export MASTERLOOP=$((MASTERCOUNT - 1))
+export INFRALOOP=$((INFRACOUNT - 1))
+export NODELOOP=$((NODECOUNT - 1))
 
-# Generate private keys for use by Ansible
-echo $(date) " - Generating Private keys for use by Ansible for OpenShift Installation"
-
-echo "Generating Private Keys"
-
-runuser -l $SUDOUSER -c "echo \"$PRIVATEKEY\" > ~/.ssh/id_rsa"
-runuser -l $SUDOUSER -c "chmod 600 ~/.ssh/id_rsa*"
-
-echo "Configuring SSH ControlPath to use shorter path name"
+echo $(date) " - Configuring SSH ControlPath to use shorter path name"
 
 sed -i -e "s/^# control_path = %(directory)s\/%%h-%%r/control_path = %(directory)s\/%%h-%%r/" /etc/ansible/ansible.cfg
 sed -i -e "s/^#host_key_checking = False/host_key_checking = False/" /etc/ansible/ansible.cfg
 sed -i -e "s/^#pty=False/pty=False/" /etc/ansible/ansible.cfg
+sed -i -e "s/^#stdout_callback = skippy/stdout_callback = skippy/" /etc/ansible/ansible.cfg
+sed -i -e "s/^#pipelining = False/pipelining = True/" /etc/ansible/ansible.cfg
 
-# Create Ansible Playbooks for Post Installation tasks
-echo $(date) " - Create Ansible Playbooks for Post Installation tasks"
-
-# Run on all masters - Create Inital OpenShift User on all Masters
-
-cat > /home/${SUDOUSER}/addocpuser.yml <<EOF
----
-- hosts: masters
-  gather_facts: no
-  remote_user: ${SUDOUSER}
-  become: yes
-  become_method: sudo
-  vars:
-    description: "Create OpenShift Users"
-  tasks:
-  - name: create directory
-    file: path=/etc/origin/master state=directory
-  - name: add initial OpenShift user
-    shell: htpasswd -cb /etc/origin/master/htpasswd ${SUDOUSER} "${PASSWORD}"
-EOF
-
-# Run on MASTER-0 - Make initial OpenShift User a Cluster Admin
-
-cat > /home/${SUDOUSER}/assignclusteradminrights.yml <<EOF
----
-- hosts: master0
-  gather_facts: no
-  remote_user: ${SUDOUSER}
-  become: yes
-  become_method: sudo
-  vars:
-    description: "Make user cluster admin"
-  tasks:
-  - name: make OpenShift user cluster admin
-    shell: oadm policy add-cluster-role-to-user cluster-admin $SUDOUSER --config=/etc/origin/master/admin.kubeconfig
-EOF
-
-# Run on all nodes - Set Root password on all nodes
-
-cat > /home/${SUDOUSER}/assignrootpassword.yml <<EOF
----
-- hosts: nodes
-  gather_facts: no
-  remote_user: ${SUDOUSER}
-  become: yes
-  become_method: sudo
-  vars:
-    description: "Set password for Cockpit"
-  tasks:
-  - name: configure Cockpit password
-    shell: echo "${PASSWORD}"|passwd root --stdin
-EOF
+# echo $(date) " - Modifying sudoers"
+sed -i -e "s/Defaults    requiretty/# Defaults    requiretty/" /etc/sudoers
+sed -i -e '/Defaults    env_keep += "LC_TIME LC_ALL LANGUAGE LINGUAS _XKB_CHARSET XAUTHORITY"/aDefaults    env_keep += "PATH"' /etc/sudoers
 
 # Run on MASTER-0 node - configure registry to use Azure Storage
 # Create docker registry config based on Commercial Azure or Azure Government
-
-if [[ $CLOUD == "US" ]]
+if [ $CLOUD == "US" ]
 then
-
-cat > /home/${SUDOUSER}/dockerregistry.yml <<EOF
----
-- hosts: master0
-  gather_facts: no
-  remote_user: ${SUDOUSER}
-  become: yes
-  become_method: sudo
-  vars:
-    description: "Set registry to use Azure Storage"
-  tasks:
-  - name: Configure docker-registry to use Azure Storage
-    shell: oc env dc docker-registry -e REGISTRY_STORAGE=azure -e REGISTRY_STORAGE_AZURE_ACCOUNTNAME=$REGISTRYSA -e REGISTRY_STORAGE_AZURE_ACCOUNTKEY=$ACCOUNTKEY -e REGISTRY_STORAGE_AZURE_CONTAINER=registry -e REGISTRY_STORAGE_AZURE_REALM=core.usgovcloudapi.net
-EOF
-
+    DOCKERREGISTRYYAML=dockerregistrygov.yaml
+    export CLOUDNAME="AzureUSGovernmentCloud"
 else
-
-cat > /home/${SUDOUSER}/dockerregistry.yml <<EOF
----
-- hosts: master0
-  gather_facts: no
-  remote_user: ${SUDOUSER}
-  become: yes
-  become_method: sudo
-  vars:
-    description: "Set registry to use Azure Storage"
-  tasks:
-  - name: Configure docker-registry to use Azure Storage
-    shell: oc env dc docker-registry -e REGISTRY_STORAGE=azure -e REGISTRY_STORAGE_AZURE_ACCOUNTNAME=$REGISTRYSA -e REGISTRY_STORAGE_AZURE_ACCOUNTKEY=$ACCOUNTKEY -e REGISTRY_STORAGE_AZURE_CONTAINER=registry
-EOF
-
+    DOCKERREGISTRYYAML=dockerregistrypublic.yaml
+    export CLOUDNAME="AzurePublicCloud"
 fi
 
-# Run on MASTER-0 - Configure Storage Class
-
-cat > /home/${SUDOUSER}/configurestorageclass.yml <<EOF
----
-- hosts: master0
-  gather_facts: no
-  remote_user: ${SUDOUSER}
-  become: yes
-  become_method: sudo
-  vars:
-    description: "Create Storage Class"
-  tasks:
-  - name: Create Storage Class with StorageAccountPV1
-    shell: oc create -f /home/${SUDOUSER}/scgeneric1.yml
-EOF
-
-# Create vars.yml file for use by Azure Cloud Provider configuration playbooks
-
-cat > /home/${SUDOUSER}/vars.yml <<EOF
-g_tenantId: $TENANTID
-g_subscriptionId: $SUBSCRIPTIONID
-g_aadClientId: $AADCLIENTID
-g_aadClientSecret: $AADCLIENTSECRET
-g_resourceGroup: $RESOURCEGROUP
-g_location: $LOCATION
-EOF
-
-# Create Azure Cloud Provider configuration Playbook for Master Config
-
-if [ $MASTERCOUNT -eq 1 ]
+# Setting the default openshift_cloudprovider_kind if Azure enabled
+if [ $AZURE == "true" ]
 then
-
-# Single Master Configuration
-
-cat > /home/${SUDOUSER}/setup-azure-master.yml <<EOF
-#!/usr/bin/ansible-playbook 
-- hosts: masters
-  gather_facts: no
-  serial: 1
-  vars_files:
-  - vars.yml
-  become: yes
-  vars:
-    azure_conf_dir: /etc/azure
-    azure_conf: "{{ azure_conf_dir }}/azure.conf"
-    master_conf: /etc/origin/master/master-config.yaml
-  handlers:
-  - name: restart atomic-openshift-master
-    systemd:
-      state: restarted
-      name: atomic-openshift-master
-
-  post_tasks:
-  - name: make sure /etc/azure exists
-    file:
-      state: directory
-      path: "{{ azure_conf_dir }}"
-
-  - name: populate /etc/azure/azure.conf
-    copy:
-      dest: "{{ azure_conf }}"
-      content: |
-        {
-          "aadClientID" : "{{ g_aadClientId }}",
-          "aadClientSecret" : "{{ g_aadClientSecret }}",
-          "subscriptionID" : "{{ g_subscriptionId }}",
-          "tenantID" : "{{ g_tenantId }}",
-          "resourceGroup": "{{ g_resourceGroup }}",
-        } 
-    notify:
-    - restart atomic-openshift-master
-
-  - name: insert the azure disk config into the master
-    modify_yaml:
-      dest: "{{ master_conf }}"
-      yaml_key: "{{ item.key }}"
-      yaml_value: "{{ item.value }}"
-    with_items:
-    - key: kubernetesMasterConfig.apiServerArguments.cloud-config
-      value:
-      - "{{ azure_conf }}"
-
-    - key: kubernetesMasterConfig.apiServerArguments.cloud-provider
-      value:
-      - azure
-
-    - key: kubernetesMasterConfig.controllerArguments.cloud-config
-      value:
-      - "{{ azure_conf }}"
-
-    - key: kubernetesMasterConfig.controllerArguments.cloud-provider
-      value:
-      - azure
-    notify:
-    - restart atomic-openshift-master
-EOF
-
-else
-
-# Multiple Master Configuration
-
-cat > /home/${SUDOUSER}/setup-azure-master.yml <<EOF
-#!/usr/bin/ansible-playbook 
-- hosts: masters
-  gather_facts: no
-  serial: 1
-  vars_files:
-  - vars.yml
-  become: yes
-  vars:
-    azure_conf_dir: /etc/azure
-    azure_conf: "{{ azure_conf_dir }}/azure.conf"
-    master_conf: /etc/origin/master/master-config.yaml
-  handlers:
-  - name: restart atomic-openshift-master-api
-    systemd:
-      state: restarted
-      name: atomic-openshift-master-api
-
-  - name: restart atomic-openshift-master-controllers
-    systemd:
-      state: restarted
-      name: atomic-openshift-master-controllers
-
-  post_tasks:
-  - name: make sure /etc/azure exists
-    file:
-      state: directory
-      path: "{{ azure_conf_dir }}"
-
-  - name: populate /etc/azure/azure.conf
-    copy:
-      dest: "{{ azure_conf }}"
-      content: |
-        {
-          "aadClientID" : "{{ g_aadClientId }}",
-          "aadClientSecret" : "{{ g_aadClientSecret }}",
-          "subscriptionID" : "{{ g_subscriptionId }}",
-          "tenantID" : "{{ g_tenantId }}",
-          "resourceGroup": "{{ g_resourceGroup }}",
-        } 
-    notify:
-    - restart atomic-openshift-master-api
-    - restart atomic-openshift-master-controllers
-
-  - name: insert the azure disk config into the master
-    modify_yaml:
-      dest: "{{ master_conf }}"
-      yaml_key: "{{ item.key }}"
-      yaml_value: "{{ item.value }}"
-    with_items:
-    - key: kubernetesMasterConfig.apiServerArguments.cloud-config
-      value:
-      - "{{ azure_conf }}"
-
-    - key: kubernetesMasterConfig.apiServerArguments.cloud-provider
-      value:
-      - azure
-
-    - key: kubernetesMasterConfig.controllerArguments.cloud-config
-      value:
-      - "{{ azure_conf }}"
-
-    - key: kubernetesMasterConfig.controllerArguments.cloud-provider
-      value:
-      - azure
-    notify:
-    - restart atomic-openshift-master-api
-    - restart atomic-openshift-master-controllers
-EOF
-
+    CLOUDKIND="openshift_cloudprovider_kind=azure
+openshift_cloudprovider_azure_client_id=\"{{ aadClientId }}\"
+openshift_cloudprovider_azure_client_secret=\"{{ aadClientSecret }}\"
+openshift_cloudprovider_azure_tenant_id=\"{{ tenantId }}\"
+openshift_cloudprovider_azure_subscription_id=\"{{ subscriptionId }}\"
+openshift_cloudprovider_azure_cloud=$CLOUDNAME
+openshift_cloudprovider_azure_vnet_name=$VNETNAME
+openshift_cloudprovider_azure_security_group_name=$NODENSG
+openshift_cloudprovider_azure_availability_set_name=$NODEAVAILIBILITYSET
+openshift_cloudprovider_azure_resource_group=$RESOURCEGROUP
+openshift_cloudprovider_azure_location=$LOCATION"
+	CNS_DEFAULT_STORAGE=false
+	if [[ $STORAGEKIND == "managed" ]]
+	then
+		SCKIND="openshift_storageclass_parameters={'kind': 'managed', 'storageaccounttype': 'Premium_LRS'}"
+	else
+		SCKIND="openshift_storageclass_parameters={'kind': 'shared', 'storageaccounttype': 'Premium_LRS'}"
+	fi
 fi
 
-# Create Azure Cloud Provider configuration Playbook for Node Config (Master Nodes)
+# Cloning Ansible playbook repository
 
-cat > /home/${SUDOUSER}/setup-azure-node-master.yml <<EOF
-#!/usr/bin/ansible-playbook 
-- hosts: masters
-  serial: 1
-  gather_facts: no
-  vars_files:
-  - vars.yml
-  become: yes
-  vars:
-    azure_conf_dir: /etc/azure
-    azure_conf: "{{ azure_conf_dir }}/azure.conf"
-    node_conf: /etc/origin/node/node-config.yaml
-  handlers:
-  - name: restart atomic-openshift-node
-    systemd:
-      state: restarted
-      name: atomic-openshift-node
-  post_tasks:
-  - name: make sure /etc/azure exists
-    file:
-      state: directory
-      path: "{{ azure_conf_dir }}"
+echo $(date) " - Cloning Ansible playbook repository"
 
-  - name: populate /etc/azure/azure.conf
-    copy:
-      dest: "{{ azure_conf }}"
-      content: |
-        {
-          "aadClientID" : "{{ g_aadClientId }}",
-          "aadClientSecret" : "{{ g_aadClientSecret }}",
-          "subscriptionID" : "{{ g_subscriptionId }}",
-          "tenantID" : "{{ g_tenantId }}",
-          "resourceGroup": "{{ g_resourceGroup }}",
-        } 
-    notify:
-    - restart atomic-openshift-node
-  - name: insert the azure disk config into the node
-    modify_yaml:
-      dest: "{{ node_conf }}"
-      yaml_key: "{{ item.key }}"
-      yaml_value: "{{ item.value }}"
-    with_items:
-    - key: kubeletArguments.cloud-config
-      value:
-      - "{{ azure_conf }}"
+((cd /home/$SUDOUSER && git clone https://github.com/Microsoft/openshift-container-platform-playbooks.git) || (cd /home/$SUDOUSER/openshift-container-platform-playbooks && git pull))
 
-    - key: kubeletArguments.cloud-provider
-      value:
-      - azure
-    notify:
-    - restart atomic-openshift-node
+if [ -d /home/${SUDOUSER}/openshift-container-platform-playbooks ]
+then
+    echo " - Retrieved playbooks successfully"
+else
+    echo " - Retrieval of playbooks failed"
+    exit 99
+fi
+
+# Create Master nodes grouping
+echo $(date) " - Creating Master nodes grouping"
+for (( c=0; c<$MASTERCOUNT; c++ ))
+do
+    mastergroup="$mastergroup
+$MASTER-$c openshift_hostname=$MASTER-$c openshift_node_group_name='node-config-master'"
+done
+
+# Create Infra nodes grouping 
+echo $(date) " - Creating Infra nodes grouping"
+for (( c=0; c<$INFRACOUNT; c++ ))
+do
+    infragroup="$infragroup
+$INFRA-$c openshift_hostname=$INFRA-$c openshift_node_group_name='node-config-infra'"
+done
+
+# Create Nodes grouping
+echo $(date) " - Creating Nodes grouping"
+for (( c=0; c<$NODECOUNT; c++ ))
+do
+    nodegroup="$nodegroup
+$NODE-$c openshift_hostname=$NODE-$c openshift_node_group_name='node-config-compute'"
+done
+
+# Create CNS nodes grouping if CNS is enabled
+if [ $ENABLECNS == "true" ]
+then
+    echo $(date) " - Creating CNS nodes grouping"
+
+    for (( c=0; c<$CNSCOUNT; c++ ))
+    do
+        cnsgroup="$cnsgroup
+$CNS-$c openshift_hostname=$CNS-$c openshift_node_group_name='node-config-compute'"
+    done
+fi
+
+# Setting the HA Mode if more than one master
+if [ $MASTERCOUNT != 1 ]
+then
+	echo $(date) " - Enabling HA mode for masters"
+    export HAMODE="openshift_master_cluster_method=native"
+fi
+
+# Create Temp Ansible Hosts File
+echo $(date) " - Create Ansible Hosts file"
+
+cat > /etc/ansible/hosts <<EOF
+[tempnodes]
+$mastergroup
+$infragroup
+$nodegroup
+$cnsgroup
 EOF
 
-# Create Azure Cloud Provider configuration Playbook for Node Config (Non-Master Nodes)
+# Run a loop playbook to ensure DNS Hostname resolution is working prior to continuing with script
+echo $(date) " - Running DNS Hostname resolution check"
+runuser -l $SUDOUSER -c "ansible-playbook ~/openshift-container-platform-playbooks/check-dns-host-name-resolution.yaml"
 
-cat > /home/${SUDOUSER}/setup-azure-node.yml <<EOF
-#!/usr/bin/ansible-playbook 
-- hosts: nodes:!masters
-  serial: 1
-  gather_facts: no
-  vars_files:
-  - vars.yml
-  become: yes
-  vars:
-    azure_conf_dir: /etc/azure
-    azure_conf: "{{ azure_conf_dir }}/azure.conf"
-    node_conf: /etc/origin/node/node-config.yaml
-  handlers:
-  - name: restart atomic-openshift-node
-    systemd:
-      state: restarted
-      name: atomic-openshift-node
-  post_tasks:
-  - name: make sure /etc/azure exists
-    file:
-      state: directory
-      path: "{{ azure_conf_dir }}"
+# Create glusterfs configuration if CNS is enabled
+if [ $ENABLECNS == "true" ]
+then
+    echo $(date) " - Creating glusterfs configuration"
 
-  - name: populate /etc/azure/azure.conf
-    copy:
-      dest: "{{ azure_conf }}"
-      content: |
-        {
-          "aadClientID" : "{{ g_aadClientId }}",
-          "aadClientSecret" : "{{ g_aadClientSecret }}",
-          "subscriptionID" : "{{ g_subscriptionId }}",
-          "tenantID" : "{{ g_tenantId }}",
-          "resourceGroup": "{{ g_resourceGroup }}",
-        } 
-    notify:
-    - restart atomic-openshift-node
-  - name: insert the azure disk config into the node
-    modify_yaml:
-      dest: "{{ node_conf }}"
-      yaml_key: "{{ item.key }}"
-      yaml_value: "{{ item.value }}"
-    with_items:
-    - key: kubeletArguments.cloud-config
-      value:
-      - "{{ azure_conf }}"
-
-    - key: kubeletArguments.cloud-provider
-      value:
-      - azure
-    notify:
-    - restart atomic-openshift-node
-  - name: delete the node so it can recreate itself
-    command: oc delete node {{inventory_hostname}}
-    delegate_to: ${BASTION}
-  - name: sleep to let node come back to life
-    pause:
-       seconds: 90
-EOF
-
-# Create Playbook to delete stuck Master nodes and set as not schedulable
-
-cat > /home/${SUDOUSER}/deletestucknodes.yml <<EOF
-- hosts: masters
-  gather_facts: no
-  become: yes
-  vars:
-    description: "Delete stuck nodes"
-  tasks:
-  - name: Delete stuck nodes so it can recreate itself
-    command: oc delete node {{inventory_hostname}}
-    delegate_to: ${BASTION}
-  - name: sleep between deletes
-    pause:
-      seconds: 25
-  - name: set masters as unschedulable
-    command: oadm manage-node {{inventory_hostname}} --schedulable=false
-EOF
+    for (( c=0; c<$CNSCOUNT; c++ ))
+    do
+        runuser $SUDOUSER -c "ssh-keyscan -H $CNS-$c >> ~/.ssh/known_hosts"
+        drive=$(runuser $SUDOUSER -c "ssh $CNS-$c 'sudo /usr/sbin/fdisk -l'" | awk '$1 == "Disk" && $2 ~ /^\// && ! /mapper/ {if (drive) print drive; drive = $2; sub(":", "", drive);} drive && /^\// {drive = ""} END {if (drive) print drive;}')
+        drive1=$(echo $drive | cut -d ' ' -f 1)
+        drive2=$(echo $drive | cut -d ' ' -f 2)
+        drive3=$(echo $drive | cut -d ' ' -f 3)
+        cnsglusterinfo="$cnsglusterinfo
+$CNS-$c glusterfs_devices='[ \"${drive1}\", \"${drive2}\", \"${drive3}\" ]'"
+    done
+fi
 
 # Create Ansible Hosts File
 echo $(date) " - Create Ansible Hosts file"
-
-if [ $MASTERCOUNT -eq 1 ]
-then
-
-cat > /etc/ansible/hosts <<EOF
-# Create an OSEv3 group that contains the masters and nodes groups
-[OSEv3:children]
-masters
-nodes
-master0
-new_nodes
-
-# Set variables common for all OSEv3 hosts
-[OSEv3:vars]
-ansible_ssh_user=$SUDOUSER
-ansible_become=yes
-openshift_install_examples=true
-deployment_type=openshift-enterprise
-openshift_release=v3.6
-docker_udev_workaround=True
-openshift_use_dnsmasq=True
-openshift_master_default_subdomain=$ROUTING
-openshift_override_hostname_check=true
-#osm_use_cockpit=false
-os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
-console_port=443
-openshift_cloudprovider_kind=azure
-osm_default_node_selector='type=app'
-openshift_disable_check=memory_availability,docker_image_availability
-
-# default selectors for router and registry services
-openshift_router_selector='type=infra'
-openshift_registry_selector='type=infra'
-
-openshift_master_cluster_hostname=$MASTERPUBLICIPHOSTNAME
-openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
-openshift_master_cluster_public_vip=$MASTERPUBLICIPADDRESS
-
-# Enable HTPasswdPasswordIdentityProvider
-openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
-
-# Setup metrics
-openshift_hosted_metrics_deploy=false
-openshift_metrics_cassandra_storage_type=dynamic
-openshift_metrics_start_cluster=true
-openshift_metrics_hawkular_nodeselector={"type":"infra"}
-openshift_metrics_cassandra_nodeselector={"type":"infra"}
-openshift_metrics_heapster_nodeselector={"type":"infra"}
-openshift_hosted_metrics_public_url=https://metrics.$ROUTING/hawkular/metrics
-
-# Setup logging
-openshift_hosted_logging_deploy=false
-openshift_hosted_logging_storage_kind=dynamic
-openshift_logging_fluentd_nodeselector={"logging":"true"}
-openshift_logging_es_nodeselector={"type":"infra"}
-openshift_logging_kibana_nodeselector={"type":"infra"}
-openshift_logging_curator_nodeselector={"type":"infra"}
-openshift_master_logging_public_url=https://kibana.$ROUTING
-
-# host group for masters
-[masters]
-$MASTER-0
-
-[master0]
-$MASTER-0
-
-# host group for nodes
-[nodes]
-$MASTER-0 openshift_node_labels="{'type': 'master', 'zone': 'default'}" openshift_hostname=$MASTER-0
-EOF
-
-# Loop to add Infra Nodes
-
-for (( c=0; c<$INFRACOUNT; c++ ))
-do
-  echo "$INFRA-$c openshift_node_labels=\"{'type': 'infra', 'zone': 'default'}\" openshift_hostname=$INFRA-$c" >> /etc/ansible/hosts
-done
-
-# Loop to add Nodes
-
-for (( c=0; c<$NODECOUNT; c++ ))
-do
-  echo "$NODE-$c openshift_node_labels=\"{'type': 'app', 'zone': 'default'}\" openshift_hostname=$NODE-$c" >> /etc/ansible/hosts
-done
-
-# Create new_nodes group
-
-cat >> /etc/ansible/hosts <<EOF
-
-# host group for adding new nodes
-[new_nodes]
-EOF
-
-else
 
 cat > /etc/ansible/hosts <<EOF
 # Create an OSEv3 group that contains the masters and nodes groups
@@ -555,6 +195,7 @@ masters
 nodes
 etcd
 master0
+glusterfs
 new_nodes
 
 # Set variables common for all OSEv3 hosts
@@ -563,47 +204,60 @@ ansible_ssh_user=$SUDOUSER
 ansible_become=yes
 openshift_install_examples=true
 deployment_type=openshift-enterprise
-openshift_release=v3.6
+openshift_release=v3.10
+#openshift_image_tag=v3.10
+#openshift_pkg_version=-3.10
 docker_udev_workaround=True
-openshift_use_dnsmasq=True
+openshift_use_dnsmasq=true
 openshift_master_default_subdomain=$ROUTING
 openshift_override_hostname_check=true
-#osm_use_cockpit=false
+osm_use_cockpit=true
 os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
-console_port=443
-openshift_cloudprovider_kind=azure
-osm_default_node_selector='type=app'
+openshift_master_api_port=443
+openshift_master_console_port=443
+osm_default_node_selector='node-role.kubernetes.io/compute=true'
 openshift_disable_check=memory_availability,docker_image_availability
+$CLOUDKIND
+$SCKIND
+
+# Workaround for docker image failure
+# https://access.redhat.com/solutions/3480921
+oreg_url=registry.access.redhat.com/openshift3/ose-\${component}:\${version}
+openshift_examples_modify_imagestreams=true
 
 # default selectors for router and registry services
-openshift_router_selector='type=infra'
-openshift_registry_selector='type=infra'
+openshift_router_selector='node-role.kubernetes.io/infra=true'
+openshift_registry_selector='node-role.kubernetes.io/infra=true'
+$registrygluster
 
-openshift_master_cluster_method=native
+# Deploy Service Catalog
+openshift_enable_service_catalog=false
+
+# Type of clustering being used by OCP
+$HAMODE
+
+# Addresses for connecting to the OpenShift master nodes
 openshift_master_cluster_hostname=$MASTERPUBLICIPHOSTNAME
 openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
 openshift_master_cluster_public_vip=$MASTERPUBLICIPADDRESS
 
 # Enable HTPasswdPasswordIdentityProvider
-openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
 
 # Setup metrics
-openshift_hosted_metrics_deploy=false
-openshift_metrics_cassandra_storage_type=dynamic
+openshift_metrics_install_metrics=false
 openshift_metrics_start_cluster=true
-openshift_metrics_hawkular_nodeselector={"type":"infra"}
-openshift_metrics_cassandra_nodeselector={"type":"infra"}
-openshift_metrics_heapster_nodeselector={"type":"infra"}
-openshift_hosted_metrics_public_url=https://metrics.$ROUTING/hawkular/metrics
+openshift_metrics_hawkular_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_metrics_cassandra_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_metrics_heapster_nodeselector={"node-role.kubernetes.io/infra":"true"}
 
 # Setup logging
-openshift_hosted_logging_deploy=false
-openshift_hosted_logging_storage_kind=dynamic
+openshift_logging_install_logging=false
 openshift_logging_fluentd_nodeselector={"logging":"true"}
-openshift_logging_es_nodeselector={"type":"infra"}
-openshift_logging_kibana_nodeselector={"type":"infra"}
-openshift_logging_curator_nodeselector={"type":"infra"}
-openshift_master_logging_public_url=https://kibana.$ROUTING
+openshift_logging_es_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_logging_kibana_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_logging_curator_nodeselector={"node-role.kubernetes.io/infra":"true"}
+openshift_logging_master_public_url=https://$MASTERPUBLICIPHOSTNAME
 
 # host group for masters
 [masters]
@@ -611,192 +265,183 @@ $MASTER-[0:${MASTERLOOP}]
 
 # host group for etcd
 [etcd]
-$MASTER-[0:${MASTERLOOP}] 
+$MASTER-[0:${MASTERLOOP}]
 
 [master0]
 $MASTER-0
 
+# Only populated when CNS is enabled
+[glusterfs]
+$cnsglusterinfo
+
 # host group for nodes
 [nodes]
-EOF
-
-# Loop to add Masters
-
-for (( c=0; c<$MASTERCOUNT; c++ ))
-do
-  echo "$MASTER-$c openshift_node_labels=\"{'type': 'master', 'zone': 'default'}\" openshift_hostname=$MASTER-$c" >> /etc/ansible/hosts
-done
-
-# Loop to add Infra Nodes
-
-for (( c=0; c<$INFRACOUNT; c++ ))
-do
-  echo "$INFRA-$c openshift_node_labels=\"{'type': 'infra', 'zone': 'default'}\" openshift_hostname=$INFRA-$c" >> /etc/ansible/hosts
-done
-
-# Loop to add Nodes
-
-for (( c=0; c<$NODECOUNT; c++ ))
-do
-  echo "$NODE-$c openshift_node_labels=\"{'type': 'app', 'zone': 'default'}\" openshift_hostname=$NODE-$c" >> /etc/ansible/hosts
-done
-
-# Create new_nodes group
-
-cat >> /etc/ansible/hosts <<EOF
+$mastergroup
+$infragroup
+$nodegroup
+$cnsgroup
 
 # host group for adding new nodes
 [new_nodes]
 EOF
 
-fi
+# Setup NetworkManager to manage eth0
+echo $(date) " - Running NetworkManager playbook"
+runuser -l $SUDOUSER -c "ansible-playbook -f 30 /usr/share/ansible/openshift-ansible/playbooks/openshift-node/network_manager.yml"
 
-echo $(date) " - Running network_manager.yml playbook" 
-DOMAIN=`domainname -d` 
+# Configure DNS so it always has the domain name
+echo $(date) " - Adding $DOMAIN to search for resolv.conf"
+runuser $SUDOUSER -c "ansible all -o -f 30 -b -m lineinfile -a 'dest=/etc/sysconfig/network-scripts/ifcfg-eth0 line=\"DOMAIN=$DOMAIN\"'"
 
-# Setup NetworkManager to manage eth0 
-runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/openshift-node/network_manager.yml" 
+# Configure resolv.conf on all hosts through NetworkManager
+echo $(date) " - Restarting NetworkManager"
+runuser -l $SUDOUSER -c "ansible all -o -f 30 -b -m service -a \"name=NetworkManager state=restarted\""
+echo $(date) " - NetworkManager configuration complete"
 
-# Configure resolv.conf on all hosts through NetworkManager 
-echo $(date) " - Setting up NetworkManager on eth0" 
-
-runuser -l $SUDOUSER -c "ansible all -b -m service -a \"name=NetworkManager state=restarted\"" 
-sleep 5 
-runuser -l $SUDOUSER -c "ansible all -b -m command -a \"nmcli con modify eth0 ipv4.dns-search $DOMAIN\"" 
-runuser -l $SUDOUSER -c "ansible all -b -m service -a \"name=NetworkManager state=restarted\"" 
+# Run OpenShift Container Platform prerequisites playbook
+echo $(date) " - Running Prerequisites via Ansible Playbook"
+runuser -l $SUDOUSER -c "ansible-playbook -e openshift_cloudprovider_azure_client_id=$AADCLIENTID -e openshift_cloudprovider_azure_client_secret=\"$AADCLIENTSECRET\" -e openshift_cloudprovider_azure_tenant_id=$TENANTID -e openshift_cloudprovider_azure_subscription_id=$SUBSCRIPTIONID -f 30 /usr/share/ansible/openshift-ansible/playbooks/prerequisites.yml"
+echo $(date) " - Prerequisites check complete"
 
 # Initiating installation of OpenShift Container Platform using Ansible Playbook
 echo $(date) " - Installing OpenShift Container Platform via Ansible Playbook"
-
-runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml"
-
+runuser -l $SUDOUSER -c "ansible-playbook -e openshift_cloudprovider_azure_client_id=$AADCLIENTID -e openshift_cloudprovider_azure_client_secret=\"$AADCLIENTSECRET\" -e openshift_cloudprovider_azure_tenant_id=$TENANTID -e openshift_cloudprovider_azure_subscription_id=$SUBSCRIPTIONID -f 30 /usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml"
 if [ $? -eq 0 ]
 then
-   echo $(date) " - OpenShift Cluster installed successfully"
+    echo $(date) " - OpenShift Cluster installed successfully"
 else
-   echo $(date) " - OpenShift Cluster failed to install"
-   exit 6
+    echo $(date) " - OpenShift Cluster failed to install"
+    exit 6
 fi
 
-echo $(date) " - Modifying sudoers"
-
-sed -i -e "s/Defaults    requiretty/# Defaults    requiretty/" /etc/sudoers
-sed -i -e '/Defaults    env_keep += "LC_TIME LC_ALL LANGUAGE LINGUAS _XKB_CHARSET XAUTHORITY"/aDefaults    env_keep += "PATH"' /etc/sudoers
-
-# Deploying Registry
-echo $(date) "- Registry automatically deployed to infra nodes"
-
-# Deploying Router
-echo $(date) "- Router automaticaly deployed to infra nodes"
-
-echo $(date) "- Re-enabling requiretty"
-
-sed -i -e "s/# Defaults    requiretty/Defaults    requiretty/" /etc/sudoers
-
 # Install OpenShift Atomic Client
-echo $(date) "- Installing OpenShift CLI tool (oc)"
 cd /root
 mkdir .kube
-runuser -l ${SUDOUSER} -c "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${SUDOUSER}@${MASTER}-0:~/.kube/config /tmp/kube-config"
+runuser ${SUDOUSER} -c "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${SUDOUSER}@${MASTER}-0:~/.kube/config /tmp/kube-config"
 cp /tmp/kube-config /root/.kube/config
 mkdir /home/${SUDOUSER}/.kube
 cp /tmp/kube-config /home/${SUDOUSER}/.kube/config
 chown --recursive ${SUDOUSER} /home/${SUDOUSER}/.kube
 rm -f /tmp/kube-config
-yum -y install atomic-openshift-clients 
+yum -y install atomic-openshift-clients
 
 # Adding user to OpenShift authentication file
-echo $(date) "- Adding OpenShift user"
-
-runuser -l $SUDOUSER -c "ansible-playbook ~/addocpuser.yml"
+echo $(date) " - Adding OpenShift user"
+runuser $SUDOUSER -c "ansible-playbook -f 30 ~/openshift-container-platform-playbooks/addocpuser.yaml"
 
 # Assigning cluster admin rights to OpenShift user
-echo $(date) "- Assigning cluster admin rights to user"
-
-runuser -l $SUDOUSER -c "ansible-playbook ~/assignclusteradminrights.yml"
-
-if [[ $COCKPIT == "true" ]]
-then
-
-# Setting password for root if Cockpit is enabled
-echo $(date) "- Assigning password for root, which is used to login to Cockpit"
-
-runuser -l $SUDOUSER -c "ansible-playbook ~/assignrootpassword.yml"
-fi
+echo $(date) " - Assigning cluster admin rights to user"
+runuser $SUDOUSER -c "ansible-playbook -f 30 ~/openshift-container-platform-playbooks/assignclusteradminrights.yaml"
 
 # Configure Docker Registry to use Azure Storage Account
-echo $(date) "- Configuring Docker Registry to use Azure Storage Account"
+echo $(date) " - Configuring Docker Registry to use Azure Storage Account"
+runuser $SUDOUSER -c "ansible-playbook -f 30 ~/openshift-container-platform-playbooks/$DOCKERREGISTRYYAML"
 
-runuser -l $SUDOUSER -c "ansible-playbook ~/dockerregistry.yml"
-
-if [[ $AZURE == "true" ]]
+# Reconfigure glusterfs storage class
+if [ $CNS_DEFAULT_STORAGE == "true" ]
 then
-	# Create Storage Classes
-	echo $(date) "- Creating Storage Classes"
+    echo $(date) "- Create default glusterfs storage class"
+    cat > /home/$SUDOUSER/default-glusterfs-storage.yaml <<EOF
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "$CNS_DEFAULT_STORAGE"
+  name: default-glusterfs-storage
+parameters:
+  resturl: http://heketi-storage-glusterfs.${ROUTING}
+  restuser: admin
+  secretName: heketi-storage-admin-secret
+  secretNamespace: glusterfs
+provisioner: kubernetes.io/glusterfs
+reclaimPolicy: Delete
+EOF
+    runuser -l $SUDOUSER -c "oc create -f /home/$SUDOUSER/default-glusterfs-storage.yaml"
 
-	runuser -l $SUDOUSER -c "ansible-playbook ~/configurestorageclass.yml"
-
-	echo $(date) "- Sleep for 120"
-
-	sleep 120
-
-	# Execute setup-azure-master and setup-azure-node playbooks to configure Azure Cloud Provider
-	echo $(date) "- Configuring OpenShift Cloud Provider to be Azure"
-
-	runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-master.yml"
-
-	if [ $? -eq 0 ]
-	then
-	   echo $(date) " - Cloud Provider setup of master config on Master Nodes completed successfully"
-	else
-	   echo $(date) "- Cloud Provider setup of master config on Master Nodes failed to completed"
-	   exit 7
-	fi
-
-	runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-node-master.yml"
-
-	if [ $? -eq 0 ]
-	then
-	   echo $(date) " - Cloud Provider setup of node config on Master Nodes completed successfully"
-	else
-	   echo $(date) "- Cloud Provider setup of node config on Master Nodes failed to completed"
-	   exit 8
-	fi
-
-	runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-node.yml"
-
-	if [ $? -eq 0 ]
-	then
-	   echo $(date) " - Cloud Provider setup of node config on App Nodes completed successfully"
-	else
-	   echo $(date) "- Cloud Provider setup of node config on App Nodes failed to completed"
-	   exit 9
-	fi
-
-	runuser -l $SUDOUSER -c "ansible-playbook ~/deletestucknodes.yml"
-
-	if [ $? -eq 0 ]
-	then
-	   echo $(date) " - Cloud Provider setup of OpenShift Cluster completed successfully"
-	else
-	   echo $(date) "- Cloud Provider setup failed to delete stuck Master nodes or was not able to set them as unschedulable"
-	   exit 10
-	fi
+    echo $(date) " - Sleep for 10"
+    sleep 10
 fi
 
-oc label nodes --all logging-infra-fluentd=true logging=true
+# Ensuring selinux is configured properly
+if [ $ENABLECNS == "true" ]
+then
+    # Setting selinux to allow gluster-fusefs access
+    echo $(date) " - Setting selinux to allow gluster-fuse access"
+    runuser -l $SUDOUSER -c "ansible all -o -f 30 -b -a 'sudo setsebool -P virt_sandbox_use_fusefs on'" || true
+# End of CNS specific section
+fi
 
-# Delete postinstall.yml file
-echo $(date) "- Deleting unecessary files"
+# Adding some labels back because they go missing
+echo $(date) " - Adding api and logging labels"
+runuser -l $SUDOUSER -c  "oc label --overwrite nodes $MASTER-0 openshift-infra=apiserver"
+runuser -l $SUDOUSER -c  "oc label --overwrite nodes --all logging-infra-fluentd=true logging=true"
 
-rm /home/${SUDOUSER}/addocpuser.yml
-rm /home/${SUDOUSER}/assignclusteradminrights.yml
-rm /home/${SUDOUSER}/assignrootpassword.yml
-rm /home/${SUDOUSER}/dockerregistry.yml
-rm /home/${SUDOUSER}/vars.yml
-rm /home/${SUDOUSER}/setup-azure-master.yml
-rm /home/${SUDOUSER}/setup-azure-node-master.yml
-rm /home/${SUDOUSER}/setup-azure-node.yml
-rm /home/${SUDOUSER}/deletestucknodes.yml
+# Restarting things so everything is clean before installing anything else
+echo $(date) " - Rebooting cluster to complete installation"
+runuser -l $SUDOUSER -c "ansible-playbook -f 30 ~/openshift-container-platform-playbooks/reboot-master.yaml"
+runuser -l $SUDOUSER -c "ansible-playbook -f 30 ~/openshift-container-platform-playbooks/reboot-nodes.yaml"
+sleep 20
+
+# Installing Service Catalog, Ansible Service Broker and Template Service Broker
+if [ $AZURE == "true" ] || [ $ENABLECNS == "true" ]
+then
+    runuser -l $SUDOUSER -c "ansible-playbook -e openshift_cloudprovider_azure_client_id=$AADCLIENTID -e openshift_cloudprovider_azure_client_secret=\"$AADCLIENTSECRET\" -e openshift_cloudprovider_azure_tenant_id=$TENANTID -e openshift_cloudprovider_azure_subscription_id=$SUBSCRIPTIONID -e openshift_enable_service_catalog=true -f 30 /usr/share/ansible/openshift-ansible/playbooks/openshift-service-catalog/config.yml"
+fi
+
+# Configure Metrics
+if [ $METRICS == "true" ]
+then
+    sleep 30
+    echo $(date) "- Deploying Metrics"
+    if [ $AZURE == "true" ] || [ $ENABLECNS == "true" ]
+    then
+        runuser -l $SUDOUSER -c "ansible-playbook -e openshift_cloudprovider_azure_client_id=$AADCLIENTID -e openshift_cloudprovider_azure_client_secret=\"$AADCLIENTSECRET\" -e openshift_cloudprovider_azure_tenant_id=$TENANTID -e openshift_cloudprovider_azure_subscription_id=$SUBSCRIPTIONID -e openshift_metrics_install_metrics=True -e openshift_metrics_cassandra_storage_type=dynamic -f 30 /usr/share/ansible/openshift-ansible/playbooks/openshift-metrics/config.yml"
+    else
+        runuser -l $SUDOUSER -c "ansible-playbook -e openshift_metrics_install_metrics=True /usr/share/ansible/openshift-ansible/playbooks/openshift-metrics/config.yml"
+    fi
+    if [ $? -eq 0 ]
+    then
+        echo $(date) " - Metrics configuration completed successfully"
+    else
+        echo $(date) " - Metrics configuration failed"
+        exit 11
+    fi
+fi
+
+# Configure Logging
+
+if [ $LOGGING == "true" ]
+then
+    sleep 60
+    echo $(date) "- Deploying Logging"
+    if [ $AZURE == "true" ] || [ $ENABLECNS == "true" ]
+    then
+        runuser -l $SUDOUSER -c "ansible-playbook -e openshift_cloudprovider_azure_client_id=$AADCLIENTID -e openshift_cloudprovider_azure_client_secret=\"$AADCLIENTSECRET\" -e openshift_cloudprovider_azure_tenant_id=$TENANTID -e openshift_cloudprovider_azure_subscription_id=$SUBSCRIPTIONID -e openshift_logging_install_logging=True -e openshift_logging_es_pvc_dynamic=true -f 30 /usr/share/ansible/openshift-ansible/playbooks/openshift-logging/config.yml"
+    else
+        runuser -l $SUDOUSER -c "ansible-playbook -e openshift_logging_install_logging=True -f 30 /usr/share/ansible/openshift-ansible/playbooks/openshift-logging/config.yml"
+    fi
+    if [ $? -eq 0 ]
+    then
+        echo $(date) " - Logging configuration completed successfully"
+    else
+        echo $(date) " - Logging configuration failed"
+        exit 12
+    fi
+fi
+
+# Setting Masters to non-schedulable
+echo $(date) " - Setting Masters to non-schedulable"
+runuser -l $SUDOUSER -c "ansible-playbook -f 10 ~/openshift-container-platform-playbooks/reset-masters-non-schedulable.yaml"
+
+# Re-enabling requiretty
+echo $(date) " - Re-enabling requiretty"
+sed -i -e "s/# Defaults    requiretty/Defaults    requiretty/" /etc/sudoers
+
+# Delete yaml files
+echo $(date) " - Deleting unecessary files"
+rm -rf /home/${SUDOUSER}/openshift-container-platform-playbooks
+
+echo $(date) " - Sleep for 30"
+sleep 30
 
 echo $(date) " - Script complete"

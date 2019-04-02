@@ -1,57 +1,96 @@
 ﻿{
-	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-	"contentVersion": "1.0.0.0",
-	"parameters": {
-		"location": {
-			"value": "westus2"
-		},
-		"openshiftClusterPrefix": {
-			"value": "GEN-UNIQUE"
-		},
-		"adminUsername": {
-			"value": "ocpadmin"
-		},
-		"clusterSize": {
-			"value": "small"
-		},
-		"openshiftPassword": {
+        "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {
+                "baseUrl": {
+                        "value": "https://raw.githubusercontent.com/vincepower/amp-openshift-container-platform/master"
+                },
+                "location": {
+                        "value": "canadaeast"
+                },
+                "openshiftClusterPrefix": {
+                        "value": "GEN-UNIQUE"
+                },
+                "adminUsername": {
+                        "value": "ocpadmin"
+                },
+                "nodeInstanceCount": {
+                        "value": 2
+                },
+                "bastionVmSize": {
+                        "value": "Standard_DS2_v2"
+                },
+                "infraVmSize": {
+                        "value": "Standard_D4s_v3"
+                },
+                "masterVmSize": {
+                        "value": "Standard_E2s_v3"
+                },
+                "nodeVmSize": {
+                        "value": "Standard_D2s_v3"
+                },
+                "cnsVmSize": {
+                        "value": "Standard_E4s_v3"
+                },
+                "openshiftPassword": {
 			"value": "GEN-PASSWORD"
-		},
-		"rhsmUsername": {
-			"value": "GEN-UNIQUE"
-		},
-		"rhsmPassword": {
-			"value": "changeme"
-		},
-		"rhsmPoolId": {
-			"value": "GEN-UNIQUE"
-		},
-		"sshPublicKey": {
+                },
+                "rhsmUsernameOrOrgId": {
+                        "value": "SUBSCRIPTION-USERNAME"
+                },
+                "rhsmPasswordOrActivationKey": {
+                        "value": "SUBSCRIPTION-PASSWORD"
+                },
+                "rhsmPoolId": {
+                        "value": "SUBSCRIPTION-POOL-ID"
+                },
+                "rhsmBrokerPoolId": {
+                        "value": "BROKER-SUBSCRIPTION-POOL-ID"
+                },
+                "sshPublicKey": {
 			"value": "GEN-SSH-PUB-KEY"
-		},
-		"keyVaultResourceGroup": {
+                },
+                "keyVaultResourceGroup": {
 			"value": "GEN-UNIQUE"
-		},
-		"keyVaultName": {
+                },
+                "keyVaultName": {
 			"value": "GEN-UNIQUE"
-		},
-		"keyVaultSecret": {
+                },
+                "keyVaultSecret": {
 			"value": "GEN-UNIQUE"
-		},
-		"enableAzure": {
-			"value": "true"
-		},
-		"aadClientId": {
+                },
+                "enableAzure": {
+                        "value": "true"
+                },
+                "aadClientId": {
 			"value": "GEN-UNIQUE"
 		},
 		"aadClientSecret": {
 			"value": "GEN-PASSWORD"
 		},
-		"defaultSubDomainType": {
-			"value": "nipio"
-		},
+                "enableCNS": {
+                        "value": "false"
+                },
+                "defaultSubDomainType": {
+                        "value": "nipio"
+                },
 		"defaultSubDomain": {
 			"value": "domain.com"
+		},
+                "virtualNetworkNewOrExisting": {
+                        "values": "new"
+                },
+		"addressPrefix": {
+			"value": "10.0.0.0/8"
+		},
+		"masterSubnetPrefix": {
+			"value": "10.1.0.0/16"
+		},
+		"infraSubnetPrefix": {
+			"value": "10.2.0.0/16"
+		},
+		"nodeSubnetPrefix": {
+			"value": "10.3.0.0/16"
 		}
-	}
+        }
 }

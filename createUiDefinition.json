@@ -10,7 +10,9 @@
 			"defaultValue": "clusteradmin",
 			"toolTip": "The name of the Admin User for initial SSH access to all OCP Nodes.",
 			"constraints": {
-				"required": true
+				"required": true,
+				"regex": "^[a-z0-9A-Z-]{1,31}$",
+				"validationMessage": "Only alphanumeric characters and dashes are allowed, and the value must be 1-31 characters long."
 			},
 			"osPlatform": "Linux"
 		}, {
@@ -56,140 +58,273 @@
 					"validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-20 characters long."
 				}
 			}, {
-				"name": "clusterSize",
-				"type": "Microsoft.Common.OptionsGroup",
-				"label": "OpenShift Cluster Size",
-				"defaultValue": "Medium",
-				"toolTip": "The size of Cluster to deploy - Small, Medium or Large.",
+				"name": "masterVmSize",
+				"type": "Microsoft.Compute.SizeSelector",
+				"label": "Master Node Size",
+				"toolTip": "The size of management nodes deployed in the OpenShift cluster.",
+				"recommendedSizes": [
+					"Standard_D4s_v3",
+					"Standard_D2s_v3",
+					"Standard_E2s_v3",
+					"Standard_E4s_v3"
+				],
 				"constraints": {
-					"allowedValues": [
-						{
-						"label": "Small",
-						"value": "small"
-						},
-						{
-						"label": "Medium",
-						"value": "medium"
-						},
-						{
-						"label": "Large",
-						"value": "large"
-						}
+					"allowedSizes": [
+						"Standard_D2s_v3",
+						"Standard_D4s_v3",
+						"Standard_E2s_v3",
+						"Standard_E4s_v3"
 					]
 				},
+				"options": {
+					"hideDiskTypeFilter": true
+				},
+				"osPlatform": "Linux",
+				"imageReference": {
+					"publisher": "redhat",
+					"offer": "rhel-ocp-marketplace",
+					"sku": "rhel75"
+				},
+				"count": "3",
 				"visible": true
 			}, {
-				"name": "clusterSizeSmall",
-				"type": "Microsoft.Common.OptionsGroup",
-				"label": "Small Cluster Configuration",
-				"defaultValue": "",
-				"toolTip": "For display purposes only",
+				"name": "infraVmSize",
+				"type": "Microsoft.Compute.SizeSelector",
+				"label": "Infrastructure Node Size",
+				"toolTip": "The size of infrastructure nodes deployed in the OpenShift cluster.",
+				"recommendedSizes": [
+					"Standard_E2s_v3",
+					"Standard_E4s_v3",
+					"Standard_D2s_v3",
+					"Standard_D4s_v3",
+					"Standard_D8s_v3"
+				],
 				"constraints": {
-					"allowedValues": [
-						{
-						"label": "1 Bastion Node of size Standard DS2v2",
-						"value": "bastion"
-						},
-						{
-						"label": "1 Master Node of size Standard DS2v2",
-						"value": "master"
-						},
-						{
-						"label": "1 Infra Node of size Standard DS2v2",
-						"value": "infra"
-						},
-						{
-						"label": "2 App Node of size Standard DS2v2",
-						"value": "node"
-						},
-						{
-						"label": "128 GB Data Disk for Docker Volume per VM",
-						"value": "disk"
-						},
-						{
-						"label": "Total Cores Required: 10",
-						"value": "cores"
-						}
+					"allowedSizes": [
+						"Standard_E2s_v3",
+						"Standard_E4s_v3",
+						"Standard_D2s_v3",
+						"Standard_D4s_v3",
+						"Standard_D8s_v3"
 					]
 				},
-				"visible": "[equals(steps('infrastructureSettings').clusterSize, 'small')]"
+				"options": {
+					"hideDiskTypeFilter": true
+				},
+				"osPlatform": "Linux",
+				"imageReference": {
+					"publisher": "redhat",
+					"offer": "rhel-ocp-marketplace",
+					"sku": "rhel75"
+				},
+				"count": "3",
+				"visible": true
 			}, {
-				"name": "clusterSizeMedium",
-				"type": "Microsoft.Common.OptionsGroup",
-				"label": "Medium Cluster Configuration",
-				"defaultValue": "",
-				"toolTip": "For display purposes only",
+				"name": "nodeInstanceCount",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Number of Application Nodes",
+				"defaultValue": "2",
+				"toolTip": "Select number of Application Nodes to be created in the OpenShift cluster",
 				"constraints": {
-					"allowedValues": [
-						{
-						"label": "1 Bastion Node of size Standard DS2v2",
-						"value": "bastion"
-						},
-						{
-						"label": "3 Master Nodes of size Standard DS3v2",
-						"value": "master"
-						},
-						{
-						"label": "2 Infra Nodes of size Standard DS3v2",
-						"value": "infra"
-						},
-						{
-						"label": "4 App Nodes of size Standard DS3v2",
-						"value": "node"
-						},
-						{
-						"label": "256 GB Data Disk for Docker Volume per VM",
-						"value": "disk"
-						},
-						{
-						"label": "Total Cores Required: 38",
-						"value": "cores"
-						}
-					]
-				},
-				"visible": "[equals(steps('infrastructureSettings').clusterSize, 'medium')]"
+					"regex": "^[1-9]$",
+					"required": "true",
+					"validationMessage": "Select a number between one and nine for the number of application nodes. More can be added after the cluster is created."
+				}
 			}, {
-				"name": "clusterSizeLarge",
+				"name": "nodeVmSize",
+				"type": "Microsoft.Compute.SizeSelector",
+				"label": "Application Node Size",
+				"toolTip": "The size of nodes deployed to run applications in the OpenShift cluster.",
+				"recommendedSizes": [
+					"Standard_D2s_v3",
+					"Standard_D4s_v3",
+					"Standard_E4s_v3",
+					"Standard_E16s_v3",
+					"Standard_F4s",
+					"Standard_F16s"
+				],
+				"constraints": {
+					"allowedSizes": [
+						"Standard_D2s_v3",
+						"Standard_D4s_v3",
+						"Standard_E4s_v3",
+						"Standard_E16s_v3",
+						"Standard_F4s",
+						"Standard_F16s"
+					]
+				},
+				"options": {
+					"hideDiskTypeFilter": true
+				},
+				"osPlatform": "Linux",
+				"imageReference": {
+					"publisher": "redhat",
+					"offer": "rhel-ocp-marketplace",
+					"sku": "rhel75"
+				},
+				"count": "[steps('infrastructureSettings').nodeInstanceCount]",
+				"visible": true
+			}, {
+				"name": "bastionVmSize",
+				"type": "Microsoft.Compute.SizeSelector",
+				"label": "Bastion Host Size",
+				"toolTip": "The size of bastion host used to access and deploy the OpenShift cluster.",
+				"recommendedSizes": [
+					"Standard_DS2_v2",
+					"Standard_D2s_v3"
+				],
+				"constraints": {
+					"allowedSizes": [
+						"Standard_DS2_v2",
+						"Standard_D2s_v3"
+					]
+				},
+				"options": {
+					"hideDiskTypeFilter": true
+				},
+				"osPlatform": "Linux",
+				"imageReference": {
+					"publisher": "redhat",
+					"offer": "rhel-ocp-marketplace",
+					"sku": "rhel75"
+				},
+				"count": "1",
+				"visible": true
+			}, {
+				"name": "virtualNetworkNewOrExisting",
 				"type": "Microsoft.Common.OptionsGroup",
-				"label": "Large Cluster Configuration",
-				"defaultValue": "",
-				"toolTip": "For display purposes only",
+				"label": "New or Existing Virtual Network",
+				"defaultValue": "Default (New)",
+				"toolTip": "By defaut new will bet setup with subnets in the 10.0.0.0/14 range. If you chose existing you will need to have both the name of the existing Virtual Network and the resource group it is in.",
 				"constraints": {
 					"allowedValues": [
 						{
-						"label": "1 Bastion Node of size Standard DS2v2",
-						"value": "bastion"
+						"label": "Default (New)",
+						"value": "new"
 						},
 						{
-						"label": "3 Master Nodes of size Standard DS3v2",
-						"value": "master"
+						"label": "Existing",
+						"value": "existing"
+						}
+					]
+				}
+			}, {
+				"name": "virtualNetworkName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Existing Virtual Network Name",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').virtualNetworkNewOrExisting, 'existing')]",
+					"regex": "^[a-z0-9A-Z-_]{1,90}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').virtualNetworkNewOrExisting, 'existing')]"
+			}, {
+				"name": "masterSubnetName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Subnet name for master nodes",
+				"toolTip": "The subnet which will be used to host the master nodes within the existing Virtual Network.",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').virtualNetworkNewOrExisting, 'existing')]",
+					"regex": "^[a-z0-9A-Z-_]{1,90}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').virtualNetworkNewOrExisting, 'existing')]"
+			}, {
+				"name": "infraSubnetName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Subnet name for infra nodes",
+				"toolTip": "The subnet which will be used to host the infrastructure nodes within the existing Virtual Network.",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').virtualNetworkNewOrExisting, 'existing')]",
+					"regex": "^[a-z0-9A-Z-_]{1,90}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').virtualNetworkNewOrExisting, 'existing')]"
+			}, {
+				"name": "nodeSubnetName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Subnet name for compute and cns nodes",
+				"toolTip": "The subnet which will be used to host the compute and cns nodes within the existing Virtual Network.",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').virtualNetworkNewOrExisting, 'existing')]",
+					"regex": "^[a-z0-9A-Z-_]{1,90}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').virtualNetworkNewOrExisting, 'existing')]"
+			}, {
+				"name": "virtualNetworkResourceGroupName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Resource Group for the existing Virtual Network",
+				"toolTip": "The resource group where the existing virtual network resides.",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').virtualNetworkNewOrExisting, 'existing')]",
+					"regex": "^[a-z0-9A-Z-_]{1,90}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').virtualNetworkNewOrExisting, 'existing')]"
+			}, {
+				"name": "customIPrange",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "Chosing the default or to customize the Virtual Network",
+				"defaultValue": "Default Settings",
+				"toolTip": "The default VirtualNetwork this offer will create subnets use IPs in the range 10.0.0.0/14 range.",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "Default Settings",
+						"value": "false"
 						},
 						{
-						"label": "2 Infra Nodes of size Standard DS3v2",
-						"value": "infra"
-						},
-						{
-						"label": "6 App Nodes of size Standard DS4v2",
-						"value": "node"
-						},
-						{
-						"label": "512 GB Data Disk for Docker Volume",
-						"value": "disk"
-						},
-						{
-						"label": "Total Cores Required: 70",
-						"value": "cores"
+						"label": "Custom IP Range",
+						"value": "true"
 						}
 					]
 				},
-				"visible": "[equals(steps('infrastructureSettings').clusterSize, 'large')]"
+				"visible": "[equals(steps('infrastructureSettings').virtualNetworkNewOrExisting, 'new')]"
+			}, {
+				"name": "addressPrefixes",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Address Range for the VirtualNetwork (default is 10.0.0.0/14)",
+				"toolTip": "Has to be an RFC 1918 address and will contain the master and node subnets.",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
+					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').customIPrange, 'true')]"
+			}, {
+				"name": "masterSubnetPrefix",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Address Range for the subnet containing the master, infra, and cns nodes (default is 10.1.0.0/16)",
+				"toolTip": "Needs to be at least 16 IP addresses and be follow RFC 1918.",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
+					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').customIPrange, 'true')]"
+			}, {
+				"name": "infraSubnetPrefix",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Address Range for the subnet containing all the infrastructure nodes (default is 10.2.0.0/16)",
+				"toolTip": "Needs to be at least 32 IP addresses and be follow RFC 1918.",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
+					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').customIPrange, 'true')]"
+			}, {
+				"name": "nodeSubnetPrefix",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Address Range for the subnet containing all the cns and compute nodes (default is 10.3.0.0/16)",
+				"toolTip": "Needs to be at least 32 IP addresses and be follow RFC 1918.",
+				"constraints": {
+					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
+					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
+				},
+				"visible": "[equals(steps('infrastructureSettings').customIPrange, 'true')]"
 			}, {
 				"name": "keyVaultResourceGroup",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Key Vault Resource Group Name",
 				"toolTip": "Name of the Resource Group that contains the Key Vault used to store the Private Key.",
 				"constraints": {
-					"required": true
+					"required": true,
+					"regex": "^[a-z0-9A-Z-_]{1,90}$",
+					"validationMessage": "Only alphanumeric characters, underscores, and dashes are allowed."
 				}
 			}, {
 				"name": "keyVaultName",
@@ -197,7 +332,9 @@
 				"label": "Key Vault Name",
 				"toolTip": "Name of the Key Vault that contains the Secret used to store the Private Key.",
 				"constraints": {
-					"required": true
+					"required": true,
+					"regex": "^[a-z0-9A-Z-]{3,24}$",
+					"validationMessage": "Only alphanumeric characters and dashes are allowed, and has to be between 3 and 24 characters."
 				}
 			}, {
 				"name": "keyVaultSecret",
@@ -205,7 +342,9 @@
 				"label": "Secret Name",
 				"toolTip": "Name of the Secret that contains the Private Key.",
 				"constraints": {
-					"required": true
+					"required": true,
+					"regex": "^[a-z0-9A-Z-]{1,127}$",
+					"validationMessage": "Only alphanumeric characters and dashes are allowed."
 				}
 			}]
 		}, {
@@ -236,7 +375,9 @@
 				"label": "Red Hat Subscription Manager User Name",
 				"toolTip": "User Name to access your Red Hat Subscription - access.redhat.com. This is used to register the RHEL instance to your subscription and will not be stored by Microsoft or Red Hat.",
 				"constraints": {
-					"required": true
+					"required": true,
+					"regex":"^[a-z0-9A-Z-_.@]{5,}$",
+					"validationMessage": "Red Hat Subscription usernames need to be 5 or more characters."
 				}
 			}, {
 				"name": "rhsmPassword",
@@ -255,16 +396,28 @@
 			}, {
 				"name": "rhsmPoolId",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Red Hat Subscription Manager Pool ID",
+				"label": "Red Hat Subscription Manager OpenShift Pool ID",
 				"toolTip": "The Pool ID that contains OpenShift Container Platform entitlement. Ensure you have enough entitlements of OpenShift Container Platform for the installation of the cluster.",
 				"constraints": {
-					"required": true
+					"required": true,
+					"regex": "^[a-fA-F0-9]{1,64}$",
+					"validationMessage": "Pool IDs can only contain hexadecimal values."
+				}
+			}, {
+				"name": "rhsmBrokerPoolId",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Red Hat Subscription Manager OpenShift Pool ID for Broker / Master Nodes",
+				"toolTip": "Red Hat Subscription Manager Pool ID with OpenShift entitlements for Broker / Master Nodes. If not using this, enter the Pool ID for Application Nodes. To find it, run on registered server: subscription-manager list",
+				"constraints": {
+					"required": true,
+					"regex": "^[a-fA-F0-9]{1,64}$",
+					"validationMessage": "Pool IDs can only contain hexadecimal values."
 				}
 			}, {
 				"name": "enableAzure",
 				"type": "Microsoft.Common.OptionsGroup",
 				"label": "Configure Azure Cloud Provider",
-				"defaultValue": "No",
+				"defaultValue": "Yes",
 				"toolTip": "Configure OpenShift to use Azure Cloud Provider. Necessary if using Azure disk attach for persistent volumes.",
 				"constraints": {
 					"allowedValues": [
@@ -277,15 +430,14 @@
 						"value": "false"
 						}
 					]
-				},
-				"visible": "[not(equals(steps('infrastructureSettings').clusterSize, 'small'))]"
+				}
 			}, {
 				"name": "aadClientId",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Azure AD Service Principal Client ID GUID",
 				"toolTip": "Azure AD Service Principal Client ID GUID - also known as AppID.",
 				"constraints": {
-					"required": true,
+					"required": "[equals(steps('openShiftSettings').enableAzure, 'true')]",
 					"regex": "^[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{12}$"
 				},
 				"visible": "[equals(steps('openShiftSettings').enableAzure, 'true')]"
@@ -298,12 +450,107 @@
 				},
 				"toolTip": "Azure AD Service Principal Client ID Secret.",
 				"constraints": {
-					"required": true
+					"required": "[equals(steps('openShiftSettings').enableAzure, 'true')]"
 				},
 				"options": {
 					"hideConfirmation": true
 				},
 				"visible": "[equals(steps('openShiftSettings').enableAzure, 'true')]"
+			}]
+		}, {
+			"name": "additionalSettings",
+			"label": "Additional Settings",
+			"subLabel": {
+				"preValidation": "Additional Settings",
+				"postValidation": "Done"
+			},
+			"bladeTitle": "Additional Settings",
+			"elements": [{
+				"name": "enableCNS",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "Configure Container Native Storage (CNS)",
+				"defaultValue": "No",
+				"toolTip": "Installs CNS in the OpenShift cluster and enable it as storage. Will be default if Azure Provider is disabled.",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "Yes",
+						"value": "true"
+						},
+						{
+						"label": "No",
+						"value": "false"
+						}
+					]
+				}
+			}, {
+				"name": "cnsVmSize",
+				"type": "Microsoft.Compute.SizeSelector",
+				"label": "CNS Node Size",
+				"toolTip": "The size of nodes used to host Cloud Native Storage in the OpenShift cluster.",
+				"recommendedSizes": [
+					"Standard_E2s_v3",
+					"Standard_D4s_v3",
+					"Standard_E4s_v3",
+					"Standard_D2s_v3",
+					"Standard_D8s_v3"
+				],
+				"constraints": {
+					"allowedSizes": [
+						"Standard_E2s_v3",
+						"Standard_E4s_v3",
+						"Standard_D2s_v3",
+						"Standard_D4s_v3",
+						"Standard_D8s_v3"
+					]
+				},
+				"options": {
+					"hideDiskTypeFilter": true
+				},
+				"osPlatform": "Linux",
+				"imageReference": {
+					"publisher": "redhat",
+					"offer": "rhel-ocp-marketplace",
+					"sku": "rhel75"
+				},
+				"count": "3",
+				"visible": "[equals(steps('additionalSettings').enableCNS, 'true')]"
+			}, {
+				"name": "enableLogging",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "Configure Cluster Logging",
+				"defaultValue": "No",
+				"toolTip": "Installs Logging functionality into the cluster.",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "Yes",
+						"value": "true"
+						},
+						{
+						"label": "No",
+						"value": "false"
+						}
+					]
+				}
+			}, {
+				"name": "enableMetrics",
+				"type": "Microsoft.Common.OptionsGroup",
+				"label": "Configure Metrics for the Cluster",
+				"defaultValue": "No",
+				"toolTip": "Installs metrics into the OpenShift cluster.",
+				"constraints": {
+					"allowedValues": [
+						{
+						"label": "Yes",
+						"value": "true"
+						},
+						{
+						"label": "No",
+						"value": "false"
+						}
+					]
+				}
 			}, {
 				"name": "defaultSubDomainType",
 				"type": "Microsoft.Common.DropDown",
@@ -328,27 +575,46 @@
 					"regex": "^([A-z0-9]+(-[A-z0-9]+)*\\.)+[a-z]{2,}$",
 					"required": true
 				},
-				"visible": "[equals(steps('openShiftSettings').defaultSubDomainType, 'custom')]"
+				"visible": "[equals(steps('additionalSettings').defaultSubDomainType, 'custom')]"
 			}]
 		}],
 		"outputs": {
 			"location": "[location()]",
 			"sshPublicKey": "[basics('adminPassword').sshPublicKey]",
-			"clusterSize": "[steps('infrastructureSettings').clusterSize]",
+			"bastionVmSize": "[steps('infrastructureSettings').masterVmSize]",
+			"cnsVmSize": "[steps('infrastructureSettings').masterVmSize]",
+			"infraVmSize": "[steps('infrastructureSettings').masterVmSize]",
+			"masterVmSize": "[steps('infrastructureSettings').infraVmSize]",
+			"nodeInstanceCount": "[int(steps('infrastructureSettings').nodeInstanceCount)]",
+			"nodeVmSize": "[steps('infrastructureSettings').nodeVmSize]",
 			"openshiftClusterPrefix": "[steps('infrastructureSettings').openshiftClusterPrefix]",
-			"adminUsername": "[basics('adminUsername')]",
-			"openshiftPassword": "[steps('openShiftSettings').openshiftPassword]",
-			"rhsmUsername": "[steps('openShiftSettings').rhsmUsername]",
-			"rhsmPassword": "[steps('openShiftSettings').rhsmPassword]",
-			"rhsmPoolId": "[steps('openShiftSettings').rhsmPoolId]",
 			"keyVaultResourceGroup": "[steps('infrastructureSettings').keyVaultResourceGroup]",
 			"keyVaultName": "[steps('infrastructureSettings').keyVaultName]",
 			"keyVaultSecret": "[steps('infrastructureSettings').keyVaultSecret]",
+			"adminUsername": "[basics('adminUsername')]",
+			"openshiftPassword": "[steps('openShiftSettings').openshiftPassword]",
+			"rhsmUsernameOrOrgId": "[steps('openShiftSettings').rhsmUsername]",
+			"rhsmPasswordOrActivationKey": "[steps('openShiftSettings').rhsmPassword]",
+			"rhsmPoolId": "[steps('openShiftSettings').rhsmPoolId]",
+			"rhsmBrokerPoolId": "[steps('openShiftSettings').rhsmBrokerPoolId]",
 			"enableAzure": "[steps('openShiftSettings').enableAzure]",
 			"aadClientId": "[steps('openShiftSettings').aadClientId]",
 			"aadClientSecret": "[steps('openShiftSettings').aadClientSecret]",
-			"defaultSubDomainType": "[steps('openShiftSettings').defaultSubDomainType]",
-			"defaultSubDomain": "[steps('openShiftSettings').defaultSubDomain]"
+			"enableCNS": "[steps('additionalSettings').enableCNS]",
+			"enableLogging": "[steps('additionalSettings').enableLogging]",
+			"enableMetrics": "[steps('additionalSettings').enableMetrics]",
+			"defaultSubDomainType": "[steps('additionalSettings').defaultSubDomainType]",
+			"defaultSubDomain": "[steps('additionalSettings').defaultSubDomain]",
+			"virtualNetworkNewOrExisting": "[steps('infrastructureSettings').virtualNetworkNewOrExisting]",
+			"virtualNetworkResourceGroupName": "[steps('infrastructureSettings').virtualNetworkResourceGroupName]",
+			"virtualNetworkName": "[steps('infrastructureSettings').virtualNetworkName]",
+			"addressPrefixes": "[steps('infrastructureSettings').addressPrefixes]",
+			"masterSubnetPrefix": "[steps('infrastructureSettings').masterSubnetPrefix]",
+			"masterSubnetName": "[steps('infrastructureSettings').masterSubnetName]",
+			"infraSubnetPrefix": "[steps('infrastructureSettings').infraSubnetPrefix]",
+			"infraSubnetName": "[steps('infrastructureSettings').infraSubnetName]",
+			"nodeSubnetPrefix": "[steps('infrastructureSettings').nodeSubnetPrefix]",
+			"nodeSubnetName": "[steps('infrastructureSettings').nodeSubnetName]"
 		}
 	}
 }
