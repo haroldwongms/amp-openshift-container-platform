@@ -26,8 +26,20 @@ elif [ $RETCODE -eq 64 ]
 then
     echo "This system is already registered."
 else
-    echo "Incorrect Username / Password or Organization ID / Activation Key specified"
-    exit 3
+    sleep 5
+	subscription-manager register --force --username="$USERNAME_ORG" --password="$PASSWORD_ACT_KEY" || subscription-manager register --force --activationkey="$PASSWORD_ACT_KEY" --org="$USERNAME_ORG"
+	RETCODE2=$?
+	if [ $RETCODE2 -eq 0 ]
+	then
+		echo "Subscribed successfully"
+	elif [ $RETCODE2 -eq 64 ]
+	then
+		echo "This system is already registered."
+	else
+		echo "Incorrect Username / Password or Organization ID / Activation Key specified. Unregistering system from RHSM"
+		subscription-manager unregister
+		exit 3
+	fi
 fi
 
 subscription-manager attach --pool=$POOL_ID > attach.log
@@ -53,10 +65,11 @@ subscription-manager repos --disable="*"
 subscription-manager repos \
     --enable="rhel-7-server-rpms" \
     --enable="rhel-7-server-extras-rpms" \
-    --enable="rhel-7-server-ose-3.10-rpms" \
-    --enable="rhel-7-server-ansible-2.5-rpms" \
+    --enable="rhel-7-server-ose-3.11-rpms" \
+    --enable="rhel-7-server-ansible-2.6-rpms" \
     --enable="rhel-7-fast-datapath-rpms" \
-    --enable="rh-gluster-3-client-for-rhel-7-server-rpms"
+    --enable="rh-gluster-3-client-for-rhel-7-server-rpms" \
+    --enable="rhel-7-server-optional-rpms"
 
 # Install base packages and update system to latest packages
 echo $(date) " - Install base packages and update system to latest packages"
@@ -82,7 +95,7 @@ xfs_growfs $rootdev
 
 # Install OpenShift utilities
 echo $(date) " - Installing OpenShift utilities"
-yum -y install openshift-ansible
+yum -y install openshift-ansible-3.11.88
 
 # Install Docker
 echo $(date) " - Installing Docker"
