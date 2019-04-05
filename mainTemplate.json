@@ -9,7 +9,7 @@
 				"description": "Base URL for Template Files",
 				"artifactsBaseUrl": ""
 			},
-			"defaultValue": "https://raw.githubusercontent.com/haroldwongms/amp-openshift-container-platform/updateto311"
+			"defaultValue": "https://raw.githubusercontent.com/haroldwongms/amp-openshift-container-platform/master"
 		},
 		"bastionVmSize": {
 			"type": "string",
