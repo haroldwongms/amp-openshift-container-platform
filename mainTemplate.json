@@ -1,6 +1,7 @@
 {
 	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
 	"contentVersion": "1.0.0.0",
+	"apiProfile": "2018-03-01-hybrid",
 	"parameters": {
 		"baseUrl": {
 			"type": "string",
@@ -8,13 +9,13 @@
 				"description": "Base URL for Template Files",
 				"artifactsBaseUrl": ""
 			},
-			"defaultValue": "https://raw.githubusercontent.com/vincepower/amp-openshift-container-platform/master"
+			"defaultValue": "https://raw.githubusercontent.com/haroldwongms/amp-openshift-container-platform/master"
 		},
 		"bastionVmSize": {
 			"type": "string",
 			"defaultValue": "Standard_DS2_v2",
 			"metadata": {
-				"description": "Bastion HOst VM size"
+				"description": "Bastion Host VM size"
 			}
 		},
 		"masterVmSize": {
@@ -302,9 +303,9 @@
 		"nodeInstanceCount": "[int(parameters('nodeInstanceCount'))]",
 		"storageKind": "managed",
 		"resourceGroupName": "[resourceGroup().id]",
-		"apiVersionCompute": "2017-03-30",
-		"apiVersionNetwork": "2017-09-01",
-		"apiVersionStorage": "2017-06-01",
+		"apiVersionCompute": "2018-06-01",
+		"apiVersionNetwork": "2018-06-01",
+		"apiVersionStorage": "2018-07-01",
 		"apiVersionLinkTemplate": "2015-01-01",
 		"defaultSubDomain": "[toLower(parameters('defaultSubDomain'))]",
 		"namingInfix": "[toLower(parameters('openshiftClusterPrefix'))]",
@@ -853,7 +854,6 @@
 	},
 	"resources": [
 		{
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"name": "[concat(variables('openshiftBastionHostname'), '-nsg')]",
 			"location": "[parameters('location')]",
@@ -881,7 +881,6 @@
 				}]
 			}
 		}, {
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"name": "[concat(variables('openshiftMasterHostname'), '-nsg')]",
 			"location": "[parameters('location')]",
@@ -922,7 +921,6 @@
 				}]
 			}
 		}, {
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"name": "[concat(variables('openshiftInfraHostname'), '-nsg')]",
 			"location": "[parameters('location')]",
@@ -976,7 +974,6 @@
 				}]
 			}
 			}, {
-				"apiVersion": "[variables('apiVersionNetwork')]",
 				"type": "Microsoft.Network/networkSecurityGroups",
 				"name": "[concat(variables('openshiftCnsHostname'), '-nsg')]",
 				"condition": "[equals(parameters('enableCNS'), 'true')]",
@@ -1004,7 +1001,6 @@
 					}]
 				}
 		}, {
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"name": "[concat(variables('openshiftNodeHostname'), '-nsg')]",
 			"location": "[parameters('location')]",
@@ -1069,7 +1065,6 @@
 				"version": "[variables('redHatTags').version]",
 				"app": "[variables('redHatTags').app]"
 			},
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"properties": {
 				"addressSpace": {
 					"addressPrefixes": [
@@ -1101,7 +1096,6 @@
 			"name": "[variables('newStorageAccountArray')[copyIndex()].name]",
 			"location": "[parameters('location')]",
 			"kind": "Storage",
-			"apiVersion": "[variables('apiVersionStorage')]",
 			"tags": {
 				"displayName": "[variables('newStorageAccountArray')[copyIndex()].tagName]",
 				"provider": "[variables('redHatTags').provider]",
@@ -1122,7 +1116,6 @@
 			"name": "[variables('newStorageAccountCns')]",
 			"location": "[parameters('location')]",
 			"kind": "Storage",
-			"apiVersion": "[variables('apiVersionStorage')]",
 			"tags": {
 				"displayName": "CnsStorageAccount",
 				"provider": "[variables('redHatTags').provider]",
@@ -1137,7 +1130,6 @@
 			"type": "Microsoft.Network/publicIPAddresses",
 			"name": "[variables('bastionPublicIp')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "OpenShiftBastionPublicIP",
 				"provider": "[variables('redHatTags').provider]",
@@ -1155,7 +1147,6 @@
 			"type": "Microsoft.Network/publicIPAddresses",
 			"name": "[variables('infraLbPublicIpDnsLabel')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "OpenShiftInfraLBPublicIP",
 				"provider": "[variables('redHatTags').provider]",
@@ -1173,7 +1164,6 @@
 			"type": "Microsoft.Network/publicIPAddresses",
 			"name": "[variables('openshiftMasterPublicIpDnsLabel')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "OpenShiftMasterPublicIP",
 				"provider": "[variables('redHatTags').provider]",
@@ -1191,7 +1181,6 @@
 			"type": "Microsoft.Compute/availabilitySets",
 			"name": "[variables('availabilitySetArray')[copyIndex()].name]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionCompute')]",
 			"sku": {
 				"name": "[variables(variables('availabilitySetSku'))]"
 			},
@@ -1215,7 +1204,6 @@
 			"name": "cnsavailabilityset",
 			"condition": "[equals(parameters('enableCNS'), 'true')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionCompute')]",
 			"sku": {
 				"name": "[variables(variables('availabilitySetSku'))]"
 			},
@@ -1234,7 +1222,6 @@
 			"type": "Microsoft.Network/loadBalancers",
 			"name": "[variables('masterLoadBalancerName')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "OpenShiftMasterLB",
 				"provider": "[variables('redHatTags').provider]",
@@ -1291,7 +1278,6 @@
 			"type": "Microsoft.Network/loadBalancers",
 			"name": "[variables('infraLoadBalancerName')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "OpenShiftInfraLB",
 				"provider": "[variables('redHatTags').provider]",
@@ -1369,7 +1355,6 @@
 			"type": "Microsoft.Network/networkInterfaces",
 			"name": "[concat(variables('openshiftBastionHostname'), '-nic')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "OpenShiftBastionNetworkInterface",
 				"provider": "[variables('redHatTags').provider]",
@@ -1402,7 +1387,6 @@
 			"type": "Microsoft.Network/networkInterfaces",
 			"name": "[concat(variables('openshiftMasterHostname'), '-', copyIndex(), '-nic')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "OpenShiftMasterNetworkInterface",
 				"provider": "[variables('redHatTags').provider]",
@@ -1441,7 +1425,6 @@
 			"type": "Microsoft.Network/networkInterfaces",
 			"name": "[concat(variables('openshiftInfraHostname'), '-', copyIndex(), '-nic')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "OpenShiftInfraNetworkInterfaces",
 				"provider": "[variables('redHatTags').provider]",
@@ -1479,7 +1462,6 @@
 			"name": "[concat(variables('openshiftCnsHostname'), '-', copyIndex(), '-nic')]",
 			"condition": "[equals(parameters('enableCNS'), 'true')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "OpenShiftInfraNetworkInterfaces",
 				"provider": "[variables('redHatTags').provider]",
@@ -1514,7 +1496,6 @@
 			"type": "Microsoft.Network/networkInterfaces",
 			"name": "[concat(variables('openshiftNodeHostname'), '-', copyIndex(), '-nic')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionNetwork')]",
 			"tags": {
 				"displayName": "OpenShiftNodeNetworkInterfaces",
 				"provider": "[variables('redHatTags').provider]",
@@ -2028,7 +2009,6 @@
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"name": "[concat(variables('openshiftMasterHostname'), '-', copyIndex(), '/prepMasters')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionCompute')]",
 			"tags": {
 				"displayName": "PrepMaster",
 				"provider": "[variables('redHatTags').provider]",
@@ -2061,7 +2041,6 @@
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"name": "[concat(variables('openshiftInfraHostname'), '-', copyIndex(), '/prepNodes')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionCompute')]",
 			"tags": {
 				"displayName": "PrepInfra",
 				"provider": "[variables('redHatTags').provider]",
@@ -2095,7 +2074,6 @@
 				"name": "[concat(variables('openshiftCnsHostname'), '-', copyIndex(), '/prepNodes')]",
 				"condition": "[equals(parameters('enableCNS'), 'true')]",
 				"location": "[parameters('location')]",
-				"apiVersion": "[variables('apiVersionCompute')]",
 				"tags": {
 					"displayName": "PrepCns",
 					"provider": "[variables('redHatTags').provider]",
@@ -2128,7 +2106,6 @@
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"name": "[concat(variables('openshiftNodeHostname'), '-', copyIndex(), '/prepNodes')]",
 			"location": "[parameters('location')]",
-			"apiVersion": "[variables('apiVersionCompute')]",
 			"tags": {
 				"displayName": "PrepNodes",
 				"provider": "[variables('redHatTags').provider]",
