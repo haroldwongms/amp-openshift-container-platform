@@ -66,14 +66,14 @@ sed -i -e '/Defaults    env_keep += "LC_TIME LC_ALL LANGUAGE LINGUAS _XKB_CHARSE
 # Create docker registry config based on Commercial Azure or Azure Government
 if [ $CLOUD == "US" ]
 then
-    DOCKERREGISTRYYAML=dockerregistrygov.yaml
+    export DOCKERREGISTRYREALM="core.usgovcloudapi.net"
     export CLOUDNAME="AzureUSGovernmentCloud"
 elif [[ $CLOUD == "CH" ]]
 then
 	export DOCKERREGISTRYREALM="core.chinacloudapi.cn"
 	export CLOUDNAME="AzureChinaCloud"
 else
-    DOCKERREGISTRYYAML=dockerregistrypublic.yaml
+    export DOCKERREGISTRYREALM="core.windows.net"
     export CLOUDNAME="AzurePublicCloud"
 fi
 
@@ -419,15 +419,11 @@ then
     fi
 fi
 
-# Re-enabling requiretty
-echo $(date) " - Re-enabling requiretty"
-sed -i -e "s/# Defaults    requiretty/Defaults    requiretty/" /etc/sudoers
-
 # Delete yaml files
 echo $(date) " - Deleting unecessary files"
 rm -rf /home/${SUDOUSER}/openshift-container-platform-playbooks
 
-echo $(date) " - Sleep for 30"
-sleep 30
+echo $(date) " - Sleep for 15"
+sleep 15
 
 echo $(date) " - Script complete"
