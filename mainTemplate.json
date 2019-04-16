@@ -480,6 +480,7 @@
 		"tenantId": "[subscription().tenantId]",
 		"subscriptionId": "[subscription().subscriptionId]",
 		"apiVersionStorage": "2018-07-01",
+		"apiVersionLinkTemplate": "2017-05-10",
 		"routingSubDomain": "[toLower(parameters('routingSubDomain'))]",
 		"masterClusterDns": "[toLower(parameters('masterClusterDns'))]",
 		"namingInfix": "[toLower(parameters('openshiftClusterPrefix'))]",
@@ -1675,6 +1676,7 @@
 				}
 			}
 		}, {
+			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"type": "Microsoft.Resources/deployments",
 			"name": "bastionVmDeployment",
 			"dependsOn": [
@@ -1745,6 +1747,7 @@
 				}
 			}
 		}, {
+			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"type": "Microsoft.Resources/deployments",
 			"name": "[concat('masterVmDeployment', padLeft(add(copyIndex(), 1), 2, '0'))]",
 			"dependsOn": [
@@ -1835,6 +1838,7 @@
 				}
 			}
 		}, {
+			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"type": "Microsoft.Resources/deployments",
 			"name": "[concat('infraVmDeployment', padLeft(add(copyIndex(), 1), 2, '0'))]",
 			"dependsOn": [
@@ -1925,6 +1929,7 @@
 				}
 			}
 		}, {
+			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"type": "Microsoft.Resources/deployments",
 			"name": "[concat('nodeVmDeployment', padLeft(add(copyIndex(), 1), 2, '0'))]",
 			"dependsOn": [
@@ -2016,6 +2021,7 @@
 			}
 		}, {
 			"condition": "[equals(parameters('enableCNS'), 'true')]",
+			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"type": "Microsoft.Resources/deployments",
 			"name": "[concat('cnsVmDeployment', padLeft(add(copyIndex(), 1), 2, '0'))]",
 			"dependsOn": [
@@ -2110,6 +2116,7 @@
 				}
 			}
 		}, {
+			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"type": "Microsoft.Resources/deployments",
 			"name": "bastionPrep",
 			"dependsOn": [
@@ -2226,6 +2233,7 @@
 				}
 			}
 		}, {
+			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"type": "Microsoft.Resources/deployments",
 			"name": "[concat('masterPrep', padLeft(add(copyIndex(), 1), 2, '0'))]",			
 			"dependsOn": [
@@ -2272,6 +2280,7 @@
 				}
 			}
 		}, {
+			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"type": "Microsoft.Resources/deployments",
 			"name": "[concat('InfraPrep', padLeft(add(copyIndex(), 1), 2, '0'))]",
 			"dependsOn": [
@@ -2316,6 +2325,7 @@
 			}
 		}, {
 			"condition": "[equals(parameters('enableCNS'), 'true')]",
+			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"type": "Microsoft.Resources/deployments",
 			"name": "[concat('CNSPrep', padLeft(add(copyIndex(), 1), 2, '0'))]",
 			"dependsOn": [
@@ -2359,6 +2369,7 @@
 				}
 			}
 		}, {
+			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"type": "Microsoft.Resources/deployments",
 			"name": "[concat('NodePrep', padLeft(add(copyIndex(), 1), 2, '0'))]",
 			"dependsOn": [
@@ -2402,6 +2413,7 @@
 				}
 			}
 		}, {
+			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"type": "Microsoft.Resources/deployments",
 			"name": "OpenShiftDeployment",
 			"dependsOn": [
