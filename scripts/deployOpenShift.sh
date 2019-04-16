@@ -33,7 +33,15 @@ export CNSCOUNT=${26}
 export VNETNAME=${27}
 export NODENSG=${28}
 export NODEAVAILIBILITYSET=${29}
-
+export MASTERCLUSTERTYPE=${30}
+export PRIVATEIP=${31}
+export PRIVATEDNS=${32}
+export MASTERPIPNAME=${33}
+export ROUTERCLUSTERTYPE=${34}
+export INFRAPIPNAME=${35}
+export CUSTOMROUTINGCERTTYPE=${36}
+export CUSTOMMASTERCERTTYPE=${37}
+export MINORVERSION=${38}
 export BASTION=$(hostname)
 
 # Set CNS to default storage type.  Will be overridden later if Azure is true
@@ -42,7 +50,7 @@ export CNS_DEFAULT_STORAGE=true
 # Setting DOMAIN variable
 export DOMAIN=`domainname -d`
 
-# Determine if Commercial Azure, China Azure, or Azure Government
+# Determine if Commercial Azure or Azure Government
 CLOUD=$( curl -H Metadata:true "http://169.254.169.254/metadata/instance/compute/location?api-version=2017-04-02&format=text" | cut -c 1-2 )
 export CLOUD=${CLOUD^^}
 
@@ -62,23 +70,18 @@ sed -i -e "s/^#pipelining = False/pipelining = True/" /etc/ansible/ansible.cfg
 sed -i -e "s/Defaults    requiretty/# Defaults    requiretty/" /etc/sudoers
 sed -i -e '/Defaults    env_keep += "LC_TIME LC_ALL LANGUAGE LINGUAS _XKB_CHARSET XAUTHORITY"/aDefaults    env_keep += "PATH"' /etc/sudoers
 
-# Run on MASTER-0 node - configure registry to use Azure Storage
 # Create docker registry config based on Commercial Azure or Azure Government
-if [ $CLOUD == "US" ]
+if [[ $CLOUD == "US" ]]
 then
-    export DOCKERREGISTRYREALM="core.usgovcloudapi.net"
-    export CLOUDNAME="AzureUSGovernmentCloud"
-elif [[ $CLOUD == "CH" ]]
-then
-	export DOCKERREGISTRYREALM="core.chinacloudapi.cn"
-	export CLOUDNAME="AzureChinaCloud"
+    export DOCKERREGISTRYREALM=core.usgovcloudapi.net
+	export CLOUDNAME="AzureUSGovernmentCloud"
 else
-    export DOCKERREGISTRYREALM="core.windows.net"
-    export CLOUDNAME="AzurePublicCloud"
+	export DOCKERREGISTRYREALM=core.windows.net
+	export CLOUDNAME="AzurePublicCloud"
 fi
 
 # Setting the default openshift_cloudprovider_kind if Azure enabled
-if [ $AZURE == "true" ]
+if [[ $AZURE == "true" ]]
 then
     CLOUDKIND="openshift_cloudprovider_kind=azure
 openshift_cloudprovider_azure_client_id=$AADCLIENTID
@@ -111,42 +114,92 @@ then
     echo " - Retrieved playbooks successfully"
 else
     echo " - Retrieval of playbooks failed"
-    exit 99
+    exit 7
+fi
+
+# Configure custom routing certificate
+echo $(date) " - Create variable for routing certificate based on certificate type"
+if [[ $CUSTOMROUTINGCERTTYPE == "custom" ]]
+then
+	ROUTINGCERTIFICATE="openshift_hosted_router_certificate={\"cafile\": \"/tmp/routingca.pem\", \"certfile\": \"/tmp/routingcert.pem\", \"keyfile\": \"/tmp/routingkey.pem\"}"
+else
+	ROUTINGCERTIFICATE=""
+fi
+
+# Configure custom master API certificate
+echo $(date) " - Create variable for master api certificate based on certificate type"
+if [[ $CUSTOMMASTERCERTTYPE == "custom" ]]
+then
+	MASTERCERTIFICATE="openshift_master_overwrite_named_certificates=true
+openshift_master_named_certificates=[{\"names\": [\"$MASTERPUBLICIPHOSTNAME\"], \"cafile\": \"/tmp/masterca.pem\", \"certfile\": \"/tmp/mastercert.pem\", \"keyfile\": \"/tmp/masterkey.pem\"}]"
+else
+	MASTERCERTIFICATE=""
+fi
+
+# Configure master cluster address information based on Cluster type (private or public)
+echo $(date) " - Create variable for master cluster address based on cluster type"
+if [[ $MASTERCLUSTERTYPE == "private" ]]
+then
+	MASTERCLUSTERADDRESS="openshift_master_cluster_hostname=$MASTER01
+openshift_master_cluster_public_hostname=$PRIVATEDNS
+openshift_master_cluster_public_vip=$PRIVATEIP"
+else
+	MASTERCLUSTERADDRESS="openshift_master_cluster_hostname=$MASTERPUBLICIPHOSTNAME
+openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
+openshift_master_cluster_public_vip=$MASTERPUBLICIPADDRESS"
 fi
 
 # Create Master nodes grouping
 echo $(date) " - Creating Master nodes grouping"
-for (( c=0; c<$MASTERCOUNT; c++ ))
+MASTERLIST="0$MASTERCOUNT"
+for (( c=1; c<=$MASTERCOUNT; c++ ))
 do
     mastergroup="$mastergroup
-$MASTER-$c openshift_node_group_name='node-config-master'"
+${MASTER}0$c openshift_node_group_name='node-config-master'"
 done
 
 # Create Infra nodes grouping 
 echo $(date) " - Creating Infra nodes grouping"
-for (( c=0; c<$INFRACOUNT; c++ ))
+for (( c=1; c<=$INFRACOUNT; c++ ))
 do
     infragroup="$infragroup
-$INFRA-$c openshift_node_group_name='node-config-infra'"
+${INFRA}0$c openshift_node_group_name='node-config-infra'"
 done
 
 # Create Nodes grouping
 echo $(date) " - Creating Nodes grouping"
-for (( c=0; c<$NODECOUNT; c++ ))
-do
-    nodegroup="$nodegroup
-$NODE-$c openshift_node_group_name='node-config-compute'"
-done
+if [ $NODECOUNT -gt 9 ]
+then
+	# If more than 10 compute nodes need to create groups 01 - 09 separately than 10 and higher
+	for (( c=1; c<=9; c++ ))
+	do
+		nodegroup="$nodegroup
+${NODE}0$c openshift_node_group_name='node-config-compute'"
+	done
+
+	for (( c=10; c<=$NODECOUNT; c++ ))
+	do
+		nodegroup="$nodegroup
+${NODE}$c openshift_node_group_name='node-config-compute'"
+	done
+else
+	# If less than 10 compout nodes
+	for (( c=1; c<=$NODECOUNT; c++ ))
+	do
+		nodegroup="$nodegroup
+${NODE}0$c openshift_node_group_name='node-config-compute'"
+	done
+fi
 
 # Create CNS nodes grouping if CNS is enabled
-if [ $ENABLECNS == "true" ]
+if [[ $ENABLECNS == "true" ]]
 then
     echo $(date) " - Creating CNS nodes grouping"
 
-    for (( c=0; c<$CNSCOUNT; c++ ))
+    for (( c=1; c<=$CNSCOUNT; c++ ))
     do
         cnsgroup="$cnsgroup
-$CNS-$c openshift_node_group_name='node-config-compute'"
+${CNS}0$c openshift_node_group_name='node-config-compute'"
     done
 fi
 
@@ -173,19 +226,24 @@ echo $(date) " - Running DNS Hostname resolution check"
 runuser -l $SUDOUSER -c "ansible-playbook ~/openshift-container-platform-playbooks/check-dns-host-name-resolution.yaml"
 
 # Create glusterfs configuration if CNS is enabled
-if [ $ENABLECNS == "true" ]
+if [[ $ENABLECNS == "true" ]]
 then
     echo $(date) " - Creating glusterfs configuration"
 
-    for (( c=0; c<$CNSCOUNT; c++ ))
+	# Ensuring selinux is configured properly
+    echo $(date) " - Setting selinux to allow gluster-fuse access"
+    runuser -l $SUDOUSER -c "ansible all -o -f 30 -b -a 'sudo setsebool -P virt_sandbox_use_fusefs on'" || true
+	runuser -l $SUDOUSER -c "ansible all -o -f 30 -b -a 'sudo setsebool -P virt_use_fusefs on'" || true
+
+    for (( c=1; c<=$CNSCOUNT; c++ ))
     do
-        runuser $SUDOUSER -c "ssh-keyscan -H $CNS-$c >> ~/.ssh/known_hosts"
-        drive=$(runuser $SUDOUSER -c "ssh $CNS-$c 'sudo /usr/sbin/fdisk -l'" | awk '$1 == "Disk" && $2 ~ /^\// && ! /mapper/ {if (drive) print drive; drive = $2; sub(":", "", drive);} drive && /^\// {drive = ""} END {if (drive) print drive;}')
+        runuser $SUDOUSER -c "ssh-keyscan -H ${CNS}0$c >> ~/.ssh/known_hosts"
+        drive=$(runuser $SUDOUSER -c "ssh ${CNS}0$c 'sudo /usr/sbin/fdisk -l'" | awk '$1 == "Disk" && $2 ~ /^\// && ! /mapper/ {if (drive) print drive; drive = $2; sub(":", "", drive);} drive && /^\// {drive = ""} END {if (drive) print drive;}')
         drive1=$(echo $drive | cut -d ' ' -f 1)
         drive2=$(echo $drive | cut -d ' ' -f 2)
         drive3=$(echo $drive | cut -d ' ' -f 3)
         cnsglusterinfo="$cnsglusterinfo
-$CNS-$c glusterfs_devices='[ \"${drive1}\", \"${drive2}\", \"${drive3}\" ]'"
+${CNS}0$c glusterfs_devices='[ \"${drive1}\", \"${drive2}\", \"${drive3}\" ]'"
     done
 fi
 
@@ -209,8 +267,8 @@ ansible_become=yes
 openshift_install_examples=true
 deployment_type=openshift-enterprise
 openshift_release=v3.11
-openshift_image_tag=v3.11.88
-openshift_pkg_version=-3.11.88
+openshift_image_tag=v3.11.${MINORVERSION}
+openshift_pkg_version=-3.11.${MINORVERSION}
 docker_udev_workaround=True
 openshift_use_dnsmasq=true
 openshift_master_default_subdomain=$ROUTING
@@ -221,9 +279,12 @@ openshift_master_api_port=443
 openshift_master_console_port=443
 osm_default_node_selector='node-role.kubernetes.io/compute=true'
 openshift_disable_check=memory_availability,docker_image_availability
-#openshift_storage_glusterfs_storageclass_default=$CNS_DEFAULT_STORAGE
 $CLOUDKIND
 $SCKIND
+$CUSTOMCSS
+$ROUTINGCERTIFICATE
+$MASTERCERTIFICATE
+$PROXY
 
 # Workaround for docker image failure
 # https://access.redhat.com/solutions/3480921
@@ -233,7 +294,6 @@ openshift_examples_modify_imagestreams=true
 # default selectors for router and registry services
 openshift_router_selector='node-role.kubernetes.io/infra=true'
 openshift_registry_selector='node-role.kubernetes.io/infra=true'
-$registrygluster
 
 # Configure registry to use Azure blob storage
 openshift_hosted_registry_replicas=1
@@ -251,9 +311,7 @@ openshift_enable_service_catalog=false
 $HAMODE
 
 # Addresses for connecting to the OpenShift master nodes
-openshift_master_cluster_hostname=$MASTERPUBLICIPHOSTNAME
-openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
-openshift_master_cluster_public_vip=$MASTERPUBLICIPADDRESS
+$MASTERCLUSTERADDRESS
 
 # Enable HTPasswdPasswordIdentityProvider
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
@@ -281,14 +339,14 @@ openshift_logging_master_public_url=https://$MASTERPUBLICIPHOSTNAME
 
 # host group for masters
 [masters]
-$MASTER-[0:${MASTERLOOP}]
+${MASTER}[01:${MASTERLIST}]
 
 # host group for etcd
 [etcd]
-$MASTER-[0:${MASTERLOOP}]
+${MASTER}[01:${MASTERLIST}]
 
 [master0]
-$MASTER-0
+${MASTER}01
 
 # Only populated when CNS is enabled
 [glusterfs]
@@ -322,8 +380,8 @@ echo $(date) " - Restarting NetworkManager"
 runuser -l $SUDOUSER -c "ansible all -o -f 30 -b -m service -a \"name=NetworkManager state=restarted\""
 echo $(date) " - NetworkManager configuration complete"
 
-# Restarting things so everything is clean before installing anything else
-echo $(date) " - Rebooting cluster before performing installation"
+# Restarting things so everything is clean before continuing with installation
+echo $(date) " - Rebooting cluster to complete installation"
 runuser -l $SUDOUSER -c "ansible-playbook -f 30 ~/openshift-container-platform-playbooks/reboot-master.yaml"
 runuser -l $SUDOUSER -c "ansible-playbook -f 30 ~/openshift-container-platform-playbooks/reboot-nodes.yaml"
 sleep 20
@@ -347,7 +405,7 @@ fi
 # Install OpenShift Atomic Client
 cd /root
 mkdir .kube
-runuser ${SUDOUSER} -c "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${SUDOUSER}@${MASTER}-0:~/.kube/config /tmp/kube-config"
+runuser ${SUDOUSER} -c "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${SUDOUSER}@${MASTER}01:~/.kube/config /tmp/kube-config"
 cp /tmp/kube-config /root/.kube/config
 mkdir /home/${SUDOUSER}/.kube
 cp /tmp/kube-config /home/${SUDOUSER}/.kube/config
@@ -363,27 +421,32 @@ runuser $SUDOUSER -c "ansible-playbook -f 30 ~/openshift-container-platform-play
 echo $(date) " - Assigning cluster admin rights to user"
 runuser $SUDOUSER -c "ansible-playbook -f 30 ~/openshift-container-platform-playbooks/assignclusteradminrights.yaml"
 
-# Ensuring selinux is configured properly
-if [ $ENABLECNS == "true" ]
-then
-    # Setting selinux to allow gluster-fusefs access
-    echo $(date) " - Setting selinux to allow gluster-fuse access"
-    runuser -l $SUDOUSER -c "ansible all -o -f 30 -b -a 'sudo setsebool -P virt_sandbox_use_fusefs on'" || true
-# End of CNS specific section
-fi
-
 # Installing Service Catalog, Ansible Service Broker and Template Service Broker
-if [ $AZURE == "true" ] || [ $ENABLECNS == "true" ]
+if [[ $AZURE == "true" || $ENABLECNS == "true" ]]
 then
     runuser -l $SUDOUSER -c "ansible-playbook -e openshift_enable_service_catalog=true -f 30 /usr/share/ansible/openshift-ansible/playbooks/openshift-service-catalog/config.yml"
 fi
 
+# Adding Open Sevice Broker for Azaure (requires service catalog)
+# Disabling deployment of OSBA
+# if [[ $AZURE == "true" ]]
+# then
+    # oc new-project osba
+    # oc process -f https://raw.githubusercontent.com/Azure/open-service-broker-azure/master/contrib/openshift/osba-os-template.yaml  \
+        # -p ENVIRONMENT=AzurePublicCloud \
+        # -p AZURE_SUBSCRIPTION_ID=$SUBSCRIPTIONID \
+        # -p AZURE_TENANT_ID=$TENANTID \
+        # -p AZURE_CLIENT_ID=$AADCLIENTID \
+        # -p AZURE_CLIENT_SECRET=$AADCLIENTSECRET \
+        # | oc create -f -
+# fi
+
 # Configure Metrics
-if [ $METRICS == "true" ]
+if [[ $METRICS == "true" ]]
 then
     sleep 30
     echo $(date) "- Deploying Metrics"
-    if [ $AZURE == "true" ] || [ $ENABLECNS == "true" ]
+    if [[ $AZURE == "true" || $ENABLECNS == "true" ]]
     then
         runuser -l $SUDOUSER -c "ansible-playbook -e openshift_metrics_install_metrics=True -e openshift_metrics_cassandra_storage_type=dynamic -f 30 /usr/share/ansible/openshift-ansible/playbooks/openshift-metrics/config.yml"
     else
@@ -400,11 +463,11 @@ fi
 
 # Configure Logging
 
-if [ $LOGGING == "true" ]
+if [[ $LOGGING == "true" ]]
 then
     sleep 60
     echo $(date) "- Deploying Logging"
-    if [ $AZURE == "true" ] || [ $ENABLECNS == "true" ]
+    if [[ $AZURE == "true" || $ENABLECNS == "true" ]]
     then
         runuser -l $SUDOUSER -c "ansible-playbook -e openshift_logging_install_logging=True -e openshift_logging_es_pvc_dynamic=true -f 30 /usr/share/ansible/openshift-ansible/playbooks/openshift-logging/config.yml"
     else
@@ -419,11 +482,30 @@ then
     fi
 fi
 
+# Creating variables file for private master and Azure AD configuration playbook
+echo $(date) " - Creating variables file for future playbooks"
+cat > /home/$SUDOUSER/openshift-container-platform-playbooks/vars.yaml <<EOF
+admin_user: $SUDOUSER
+master_lb_private_dns: $PRIVATEDNS
+domain: $DOMAIN
+EOF
+
+# Configure cluster for private masters
+if [[ $MASTERCLUSTERTYPE == "private" ]]
+then
+	echo $(date) " - Configure cluster for private masters"
+	runuser -l $SUDOUSER -c "ansible-playbook -f 30 ~/openshift-container-platform-playbooks/activate-private-lb-fqdn.31x.yaml"
+fi
+
 # Delete yaml files
 echo $(date) " - Deleting unecessary files"
 rm -rf /home/${SUDOUSER}/openshift-container-platform-playbooks
 
-echo $(date) " - Sleep for 15"
+# Delete pem files
+echo $(date) " - Delete pem files"
+rm -rf /tmp/*.pem
+
+echo $(date) " - Sleep for 15 seconds"
 sleep 15
 
 echo $(date) " - Script complete"
