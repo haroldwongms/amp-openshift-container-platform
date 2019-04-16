@@ -123,7 +123,7 @@
 				"name": "nodeInstanceCount",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Number of Application Nodes",
-				"defaultValue": "2",
+				"defaultValue": 2,
 				"toolTip": "Select number of Application Nodes to be created in the OpenShift cluster",
 				"constraints": {
 					"regex": "^[1-9]$",
@@ -552,7 +552,7 @@
 					]
 				}
 			}, {
-				"name": "defaultSubDomainType",
+				"name": "routingSubDomainType",
 				"type": "Microsoft.Common.DropDown",
 				"label": "Default Router Subdomain",
 				"toolTip": "Select xipio for testing or custom to enter your own subdomain for production.",
@@ -567,7 +567,7 @@
 					}]
 				}
 			}, {
-				"name": "defaultSubDomain",
+				"name": "routingSubDomain",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Enter your custom subdomain",
 				"toolTip": "The custom subdomain to expose applications.",
@@ -575,7 +575,7 @@
 					"regex": "^([A-z0-9]+(-[A-z0-9]+)*\\.)+[a-z]{2,}$",
 					"required": true
 				},
-				"visible": "[equals(steps('additionalSettings').defaultSubDomainType, 'custom')]"
+				"visible": "[equals(steps('additionalSettings').routingSubDomainType, 'custom')]"
 			}]
 		}],
 		"outputs": {
@@ -603,8 +603,8 @@
 			"enableCNS": "[steps('additionalSettings').enableCNS]",
 			"enableLogging": "[steps('additionalSettings').enableLogging]",
 			"enableMetrics": "[steps('additionalSettings').enableMetrics]",
-			"defaultSubDomainType": "[steps('additionalSettings').defaultSubDomainType]",
-			"defaultSubDomain": "[steps('additionalSettings').defaultSubDomain]",
+			"routingSubDomainType": "[steps('additionalSettings').routingSubDomainType]",
+			"routingSubDomain": "[steps('additionalSettings').routingSubDomain]",
 			"virtualNetworkNewOrExisting": "[steps('infrastructureSettings').virtualNetworkNewOrExisting]",
 			"virtualNetworkResourceGroupName": "[steps('infrastructureSettings').virtualNetworkResourceGroupName]",
 			"virtualNetworkName": "[steps('infrastructureSettings').virtualNetworkName]",
