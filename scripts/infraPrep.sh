@@ -93,6 +93,9 @@ xfs_growfs $rootdev
 echo $(date) " - Installing Docker"
 yum -y install docker
 
+# execute another yum update
+sudo yum -y upgrade
+
 # Update docker config for insecure registry
 echo "
 # Adding insecure-registry option required by OpenShift
