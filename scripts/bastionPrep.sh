@@ -76,6 +76,21 @@ subscription-manager repos \
     --enable="rh-gluster-3-client-for-rhel-7-server-rpms" \
     --enable="rhel-7-server-optional-rpms"
 
+# Install cloud-utils-growpart to grow root partition
+yum -y install cloud-utils-growpart.noarch
+
+# Grow Root File System
+echo $(date) " - Grow Root FS"
+
+rootdev=`findmnt --target / -o SOURCE -n`
+rootdrivename=`lsblk -no pkname $rootdev`
+rootdrive="/dev/"$rootdrivename
+name=`lsblk  $rootdev -o NAME | tail -1`
+part_number=${name#*${rootdrivename}}
+
+growpart $rootdrive $part_number -u on
+xfs_growfs $rootdev
+
 # Update system to latest packages
 echo $(date) " - Update system to latest packages"
 yum -y update --exclude=WALinuxAgent
@@ -99,9 +114,6 @@ sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
 sudo sh -c 'echo -e "[azure-cli]\nname=Azure CLI\nbaseurl=https://packages.microsoft.com/yumrepos/azure-cli\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
 sudo yum install -y azure-cli
 echo $(date) " - Azure CLI installation complete"
-
-# execute another yum update
-sudo yum -y upgrade
 
 # Configure DNS so it always has the domain name
 echo $(date) " - Adding DOMAIN to search for resolv.conf"

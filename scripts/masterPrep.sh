@@ -68,14 +68,8 @@ subscription-manager repos \
     --enable="rh-gluster-3-client-for-rhel-7-server-rpms" \
     --enable="rhel-7-server-optional-rpms"
 
-# Install base packages and update system to latest packages
-echo $(date) " - Install base packages and update system to latest packages"
-
-yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion httpd-tools kexec-tools sos psacct ansible
+# Install cloud-utils-growpart to grow root partition
 yum -y install cloud-utils-growpart.noarch
-yum -y update glusterfs-fuse
-yum -y update --exclude=WALinuxAgent
-echo $(date) " - Base package insallation and updates complete"
 
 # Grow Root File System
 echo $(date) " - Grow Root FS"
@@ -89,6 +83,14 @@ part_number=${name#*${rootdrivename}}
 growpart $rootdrive $part_number -u on
 xfs_growfs $rootdev
 
+# Install base packages and update system to latest packages
+echo $(date) " - Install base packages and update system to latest packages"
+
+yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion httpd-tools kexec-tools sos psacct ansible
+yum -y update glusterfs-fuse
+yum -y update --exclude=WALinuxAgent
+echo $(date) " - Base package insallation and updates complete"
+
 if [ $? -eq 0 ]
 then
     echo "Root partition expanded"
@@ -100,9 +102,6 @@ fi
 # Install Docker
 echo $(date) " - Installing Docker"
 yum -y install docker
-
-# execute another yum update
-sudo yum -y upgrade
 
 # Update docker config for insecure registry
 echo "
