@@ -1,9 +1,9 @@
 #!/bin/bash
-echo $(date) " - Starting Infra / Node Prep Script"
+echo $(date) " - Starting Node Prep Script"
 
-USERNAME_ORG=$1
-PASSWORD_ACT_KEY="$2"
-POOL_ID=$3
+export USERNAME_ORG=$1
+export PASSWORD_ACT_KEY="$2"
+export POOL_ID=$3
 
 # Remove RHUI
 
@@ -13,7 +13,7 @@ sleep 10
 # Register Host with Cloud Access Subscription
 echo $(date) " - Register host with Cloud Access Subscription"
 
-subscription-manager register --username="$USERNAME_ORG" --password="$PASSWORD_ACT_KEY" || subscription-manager register --activationkey="$PASSWORD_ACT_KEY" --org="$USERNAME_ORG"
+subscription-manager register --force --username="$USERNAME_ORG" --password="$PASSWORD_ACT_KEY" || subscription-manager register --force --activationkey="$PASSWORD_ACT_KEY" --org="$USERNAME_ORG"
 RETCODE=$?
 
 if [ $RETCODE -eq 0 ]
@@ -65,8 +65,7 @@ subscription-manager repos \
     --enable="rhel-7-server-ose-3.11-rpms" \
     --enable="rhel-7-server-ansible-2.6-rpms" \
     --enable="rhel-7-fast-datapath-rpms" \
-    --enable="rh-gluster-3-client-for-rhel-7-server-rpms" \
-    --enable="rhel-7-server-optional-rpms"
+    --enable="rh-gluster-3-client-for-rhel-7-server-rpms"
 
 # Install cloud-utils-growpart to grow root partition
 yum -y install cloud-utils-growpart.noarch
@@ -96,14 +95,14 @@ echo $(date) " - Base package insallation and updates complete"
 echo $(date) " - Installing Docker"
 yum -y install docker
 
-# Update docker storage
+# Update docker config for insecure registry
 echo "
 # Adding insecure-registry option required by OpenShift
 OPTIONS=\"\$OPTIONS --insecure-registry 172.30.0.0/16\"
 " >> /etc/sysconfig/docker
 
 # Create thin pool logical volume for Docker
-echo $(date) " - Creating thin pool logical volume for Docker and staring service"
+echo $(date) " - Creating thin pool logical volume for Docker and starting service"
 
 DOCKERVG=$( parted -m /dev/sda print all 2>/dev/null | grep unknown | grep /dev/sd | cut -d':' -f1 | head -n1 )
 

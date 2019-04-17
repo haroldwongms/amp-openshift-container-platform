@@ -303,8 +303,6 @@
 		"nodeInstanceCount": "[int(parameters('nodeInstanceCount'))]",
 		"storageKind": "managed",
 		"resourceGroupName": "[resourceGroup().id]",
-		"apiVersionCompute": "2018-06-01",
-		"apiVersionNetwork": "2018-06-01",
 		"apiVersionStorage": "2018-07-01",
 		"apiVersionLinkTemplate": "2015-01-01",
 		"defaultSubDomain": "[toLower(parameters('defaultSubDomain'))]",
@@ -1592,9 +1590,6 @@
 					"apiVersionStorage": {
 						"value": "[variables('apiVersionStorage')]"
 					},
-					"apiVersionCompute": {
-						"value": "[variables('apiVersionCompute')]"
-					},
 					"imageReference": {
 						"value": "[variables('imageReference')]"
 					},
@@ -1676,9 +1671,6 @@
 					},
 					"apiVersionStorage": {
 						"value": "[variables('apiVersionStorage')]"
-					},
-					"apiVersionCompute": {
-						"value": "[variables('apiVersionCompute')]"
 					},
 					"imageReference": {
 						"value": "[variables('imageReference')]"
@@ -1762,9 +1754,6 @@
 					"apiVersionStorage": {
 						"value": "[variables('apiVersionStorage')]"
 					},
-					"apiVersionCompute": {
-						"value": "[variables('apiVersionCompute')]"
-					},
 					"imageReference": {
 						"value": "[variables('imageReference')]"
 					},
@@ -1846,9 +1835,6 @@
 					},
 					"apiVersionStorage": {
 						"value": "[variables('apiVersionStorage')]"
-					},
-					"apiVersionCompute": {
-						"value": "[variables('apiVersionCompute')]"
 					},
 					"imageReference": {
 						"value": "[variables('imageReference')]"
@@ -1937,9 +1923,6 @@
 					"apiVersionStorage": {
 						"value": "[variables('apiVersionStorage')]"
 					},
-					"apiVersionCompute": {
-						"value": "[variables('apiVersionCompute')]"
-					},
 					"imageReference": {
 						"value": "[variables('imageReference')]"
 					},
@@ -1967,9 +1950,6 @@
 				"parameters": {
 					"location": {
 						"value": "[parameters('location')]"
-					},
-					"apiVersionCompute": {
-						"value": "[variables('apiVersionCompute')]"
 					},
 					"bastionPrepScriptUrl": {
 						"value": "[variables('bastionPrepScriptUrl')]"
@@ -2154,9 +2134,6 @@
 				"parameters": {
 					"location": {
 						"value": "[parameters('location')]"
-					},
-					"apiVersionCompute": {
-						"value": "[variables('apiVersionCompute')]"
 					},
 					"openshiftDeploymentScriptUrl": {
 						"value": "[variables('openshiftDeploymentScriptUrl')]"

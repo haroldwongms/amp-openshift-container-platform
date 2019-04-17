@@ -9,22 +9,22 @@
 				"description": "Datacenter Region Location"
 			}
 		},
-		"bastionPrepScriptUrl": {
+		"masterPrepScriptUrl": {
 			"type": "string",
 			"metadata": {
-				"description": "Bastion prep script Url"
+				"description": "Master prep script Url"
 			}
 		},
-		"bastionPrepScriptFileName": {
+		"masterPrepScriptFileName": {
 			"type": "string",
 			"metadata": {
-				"description": "Bastion prep script file name"
+				"description": "Master prep script file name"
 			}
 		},
-		"openshiftBastionHostname": {
+		"openshiftMasterHostname": {
 			"type": "string",
 			"metadata": {
-				"description": "OpenShift Bastion hostname"
+				"description": "OpenShift Master hostname"
 			}
 		},
 		"adminUsername": {
@@ -51,12 +51,6 @@
 				"description": "Pool Id with OpenShift entitlements"
 			}
 		},
-		"sshPrivateKey": {
-			"type": "securestring",
-			"metadata": {
-				"description": "SSH private key for deploying OpenShift"
-			}
-		},
 		"redHatTags": {
 			"type": "object",
 			"metadata": {
@@ -65,17 +59,14 @@
 		}
 	},
 	"variables": {
-		"singlequote": "'",
-		"tenantId": "[subscription().tenantId]",
-		"subscriptionId": "[subscription().subscriptionId]",
-		"resourceGroupName": "[resourceGroup().name]"
+		"singlequote": "'"
 	},
 	"resources": [{
 		"type": "Microsoft.Compute/virtualMachines/extensions",
-		"name": "[concat(parameters('openshiftBastionHostname'), '/deployOpenShift')]",
+		"name": "[concat(parameters('openshiftMasterHostname'), '/prepMasters')]",
 		"location": "[parameters('location')]",
 		"tags": {
-			"displayName": "PrepBastion",
+			"displayName": "PrepMaster",
 				"provider": "[parameters('redHatTags').provider]",
 				"app": "[parameters('redHatTags').app]",
 				"version": "[parameters('redHatTags').version]",
@@ -88,11 +79,11 @@
 			"autoUpgradeMinorVersion": true,
 			"settings": {
 				"fileUris": [
-					"[parameters('bastionPrepScriptUrl')]"
+					"[parameters('masterPrepScriptUrl')]"
 				]
 			},
 			"protectedSettings": {
-				"commandToExecute": "[concat('bash ', parameters('bastionPrepScriptFileName'), ' ', parameters('rhsmUsernameOrOrgId'), ' ',variables('singlequote'), parameters('rhsmPasswordOrActivationKey'), variables('singlequote'), ' ', parameters('rhsmPoolId'), ' ', variables('singlequote'), parameters('sshPrivateKey'), variables('singlequote'), ' ', variables('singlequote'), parameters('adminUsername'), variables('singlequote'))]"
+				"commandToExecute": "[concat('bash ', parameters('masterPrepScriptFileName'), ' ', variables('singlequote'), parameters('rhsmUsernameOrOrgId'), variables('singlequote'), ' ', variables('singlequote'), parameters('rhsmPasswordOrActivationKey'), variables('singlequote'), ' ', variables('singlequote'), parameters('rhsmPoolId'), variables('singlequote'))]"
 			}
 		}
 	}],
