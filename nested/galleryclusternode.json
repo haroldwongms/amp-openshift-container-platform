@@ -179,7 +179,7 @@
 				},
 				"caching": "ReadWrite",
 				"createOption": "FromImage",
-				"diskSizeGB": 64
+				"diskSizeGB": "[parameters('osDiskSize')]"
 			},
 			"dataDisks": [{
 				"name": "[concat(parameters('hostname'), '-docker-pool')]",

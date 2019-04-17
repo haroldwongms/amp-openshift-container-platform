@@ -127,6 +127,7 @@
 				},
 				"caching": "ReadWrite",
 				"createOption": "FromImage",
+				"diskSizeGB": 30,
 				"osType": "Linux"
 			}
 		},
@@ -138,7 +139,8 @@
 					"uri": "[concat(parameters('unmanagedOsDiskUri'), 'vhds/', parameters('hostname'), '-osdisk.vhd')]"
 				},
 				"caching": "ReadWrite",
-				"createOption": "FromImage"
+				"createOption": "FromImage",
+				"diskSizeGB": 30
 			}
 		},
 		"storageProfile": "[concat(parameters('storageKind'), 'StorageProfile')]"
