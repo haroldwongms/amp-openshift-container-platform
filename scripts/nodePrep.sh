@@ -1,9 +1,9 @@
 #!/bin/bash
 echo $(date) " - Starting Infra / Node Prep Script"
 
-USERNAME_ORG=$1
-PASSWORD_ACT_KEY="$2"
-POOL_ID=$3
+export USERNAME_ORG=$1
+export PASSWORD_ACT_KEY="$2"
+export POOL_ID=$3
 
 # Remove RHUI
 
@@ -13,7 +13,7 @@ sleep 10
 # Register Host with Cloud Access Subscription
 echo $(date) " - Register host with Cloud Access Subscription"
 
-subscription-manager register --username="$USERNAME_ORG" --password="$PASSWORD_ACT_KEY" || subscription-manager register --activationkey="$PASSWORD_ACT_KEY" --org="$USERNAME_ORG"
+subscription-manager register --force --username="$USERNAME_ORG" --password="$PASSWORD_ACT_KEY" || subscription-manager register --force --activationkey="$PASSWORD_ACT_KEY" --org="$USERNAME_ORG"
 RETCODE=$?
 
 if [ $RETCODE -eq 0 ]
@@ -68,15 +68,8 @@ subscription-manager repos \
     --enable="rh-gluster-3-client-for-rhel-7-server-rpms" \
     --enable="rhel-7-server-optional-rpms"
 
-# Install base packages and update system to latest packages
-echo $(date) " - Install base packages and update system to latest packages"
-
-yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion kexec-tools sos psacct
+# Install cloud-utils-growpart to grow root partition
 yum -y install cloud-utils-growpart.noarch
-yum -y install ansible
-yum -y update glusterfs-fuse
-yum -y update --exclude=WALinuxAgent
-echo $(date) " - Base package insallation and updates complete"
 
 # Grow Root File System
 echo $(date) " - Grow Root FS"
@@ -90,11 +83,27 @@ part_number=${name#*${rootdrivename}}
 growpart $rootdrive $part_number -u on
 xfs_growfs $rootdev
 
+# Install base packages and update system to latest packages
+echo $(date) " - Install base packages and update system to latest packages"
+
+yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion kexec-tools sos psacct ansible
+yum -y update glusterfs-fuse
+yum -y update --exclude=WALinuxAgent
+echo $(date) " - Base package insallation and updates complete"
+
+if [ $? -eq 0 ]
+then
+    echo "Root partition expanded"
+else
+    echo "Root partition failed to expand"
+    exit 6
+fi
+
 # Install Docker
 echo $(date) " - Installing Docker"
 yum -y install docker
 
-# Update docker storage
+# Update docker config for insecure registry
 echo "
 # Adding insecure-registry option required by OpenShift
 OPTIONS=\"\$OPTIONS --insecure-registry 172.30.0.0/16\"

@@ -123,7 +123,7 @@
 				"name": "nodeInstanceCount",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Number of Application Nodes",
-				"defaultValue": "2",
+				"defaultValue": 2,
 				"toolTip": "Select number of Application Nodes to be created in the OpenShift cluster",
 				"constraints": {
 					"regex": "^[1-9]$",
@@ -250,7 +250,7 @@
 			}, {
 				"name": "virtualNetworkResourceGroupName",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Resource Group for the existing Virtual Network",
+				"label": "Resource Group for existing Virtual Network",
 				"toolTip": "The resource group where the existing virtual network resides.",
 				"constraints": {
 					"required": "[equals(steps('infrastructureSettings').virtualNetworkNewOrExisting, 'existing')]",
@@ -260,9 +260,9 @@
 			}, {
 				"name": "customIPrange",
 				"type": "Microsoft.Common.OptionsGroup",
-				"label": "Chosing the default or to customize the Virtual Network",
+				"label": "Choose Default CIDR Settings or customize IP Range (CIDR)",
 				"defaultValue": "Default Settings",
-				"toolTip": "The default VirtualNetwork this offer will create subnets use IPs in the range 10.0.0.0/14 range.",
+				"toolTip": "Default Settings will create vNet with CIDR of 10.0.0.0/14, master subnet with 10.1.0.0/16, infra subnet with 10.2.0.0/16, and compute and cns subnet with 10.3.0.0/16",
 				"constraints": {
 					"allowedValues": [
 						{
@@ -279,7 +279,7 @@
 			}, {
 				"name": "addressPrefixes",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Address Range for the VirtualNetwork (default is 10.0.0.0/14)",
+				"label": "Address Range for the Virtual Network (default is 10.0.0.0/14)",
 				"toolTip": "Has to be an RFC 1918 address and will contain the master and node subnets.",
 				"constraints": {
 					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
@@ -289,8 +289,8 @@
 			}, {
 				"name": "masterSubnetPrefix",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Address Range for the subnet containing the master, infra, and cns nodes (default is 10.1.0.0/16)",
-				"toolTip": "Needs to be at least 16 IP addresses and be follow RFC 1918.",
+				"label": "Address Range for the subnet containing the master nodes (default is 10.1.0.0/16)",
+				"toolTip": "Needs to contain at least 16 IP addresses and follow RFC 1918.",
 				"constraints": {
 					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
 					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
@@ -299,8 +299,8 @@
 			}, {
 				"name": "infraSubnetPrefix",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Address Range for the subnet containing all the infrastructure nodes (default is 10.2.0.0/16)",
-				"toolTip": "Needs to be at least 32 IP addresses and be follow RFC 1918.",
+				"label": "Address Range for the subnet containing the infrastructure nodes (default is 10.2.0.0/16)",
+				"toolTip": "Needs to contain at least 32 IP addresses and follow RFC 1918.",
 				"constraints": {
 					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
 					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
@@ -309,8 +309,8 @@
 			}, {
 				"name": "nodeSubnetPrefix",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Address Range for the subnet containing all the cns and compute nodes (default is 10.3.0.0/16)",
-				"toolTip": "Needs to be at least 32 IP addresses and be follow RFC 1918.",
+				"label": "Address Range for the subnet containing the compute and cns nodes (default is 10.3.0.0/16)",
+				"toolTip": "Needs to contain at least 32 IP addresses and follow RFC 1918.",
 				"constraints": {
 					"required": "[equals(steps('infrastructureSettings').customIPrange, 'true')]",
 					"regex": "^1[079][2]{0,1}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[1-2]{0,1}[0-9]{1}$"
@@ -552,10 +552,10 @@
 					]
 				}
 			}, {
-				"name": "defaultSubDomainType",
+				"name": "routingSubDomainType",
 				"type": "Microsoft.Common.DropDown",
 				"label": "Default Router Subdomain",
-				"toolTip": "Select xipio for testing or custom to enter your own subdomain for production.",
+				"toolTip": "Select nipio for testing or custom to enter your own subdomain for production.",
 				"defaultValue": "nipio",
 				"constraints": {
 					"allowedValues": [{
@@ -567,7 +567,7 @@
 					}]
 				}
 			}, {
-				"name": "defaultSubDomain",
+				"name": "routingSubDomain",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Enter your custom subdomain",
 				"toolTip": "The custom subdomain to expose applications.",
@@ -575,7 +575,7 @@
 					"regex": "^([A-z0-9]+(-[A-z0-9]+)*\\.)+[a-z]{2,}$",
 					"required": true
 				},
-				"visible": "[equals(steps('additionalSettings').defaultSubDomainType, 'custom')]"
+				"visible": "[equals(steps('additionalSettings').routingSubDomainType, 'custom')]"
 			}]
 		}],
 		"outputs": {
@@ -603,8 +603,8 @@
 			"enableCNS": "[steps('additionalSettings').enableCNS]",
 			"enableLogging": "[steps('additionalSettings').enableLogging]",
 			"enableMetrics": "[steps('additionalSettings').enableMetrics]",
-			"defaultSubDomainType": "[steps('additionalSettings').defaultSubDomainType]",
-			"defaultSubDomain": "[steps('additionalSettings').defaultSubDomain]",
+			"routingSubDomainType": "[steps('additionalSettings').routingSubDomainType]",
+			"routingSubDomain": "[steps('additionalSettings').routingSubDomain]",
 			"virtualNetworkNewOrExisting": "[steps('infrastructureSettings').virtualNetworkNewOrExisting]",
 			"virtualNetworkResourceGroupName": "[steps('infrastructureSettings').virtualNetworkResourceGroupName]",
 			"virtualNetworkName": "[steps('infrastructureSettings').virtualNetworkName]",
