@@ -397,28 +397,24 @@
 		},
 		"existingMasterSubnetReference": {
 		  "type": "string",
-		  "defaultValue": "/subscriptions/abc686f6-963b-4e64-bff4-99dc369ab1cd/resourceGroups/vnetresourcegroup/providers/Microsoft.Network/virtualNetworks/openshiftvnet/subnets/mastersubnet",
 		  "metadata": {
 			"description": "Full reference to existing subnet for Master nodes"
 		  }
 		},
 		"existingInfraSubnetReference": {
 		  "type": "string",
-		  "defaultValue": "/subscriptions/abc686f6-963b-4e64-bff4-99dc369ab1cd/resourceGroups/vnetresourcegroup/providers/Microsoft.Network/virtualNetworks/openshiftvnet/subnets/infrasubnet",
 		  "metadata": {
 			"description": "Full reference to existing subnet for Infra nodes"
 		  }
 		},
 		"existingCnsSubnetReference": {
 		  "type": "string",
-		  "defaultValue": "/subscriptions/abc686f6-963b-4e64-bff4-99dc369ab1cd/resourceGroups/vnetresourcegroup/providers/Microsoft.Network/virtualNetworks/openshiftvnet/subnets/cnssubnet",
 		  "metadata": {
 			"description": "Full reference to existing subnet for CNS nodes"
 		  }
 		},
 		"existingNodeSubnetReference": {
 		  "type": "string",
-		  "defaultValue": "/subscriptions/abc686f6-963b-4e64-bff4-99dc369ab1cd/resourceGroups/vnetresourcegroup/providers/Microsoft.Network/virtualNetworks/openshiftvnet/subnets/nodesubnet",
 		  "metadata": {
 			"description": "Full reference to existing subnet for Compute nodes"
 		  }
@@ -641,6 +637,8 @@
 			"provider": "9d2c71fc-96ba-4b4a-93b3-14def5bc96fc"
 		},
 		"singlequote": "'",
+		"usRealm": "core.windows.net",
+		"govRealm": "core.usgovcloudapi.net",
 		"sshKeyPath": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
 		"bastionPrepScriptUrl": "[concat(parameters('baseUrl'), '/scripts/bastionPrep.sh')]",
 		"nodePrepScriptUrl": "[concat(parameters('baseUrl'), '/scripts/nodePrep.sh')]",
@@ -2614,6 +2612,12 @@
 					},
 					"minorVersion": {
 						"value": "[parameters('minorVersion')]"
+					},
+					"usRealm": {
+						"value": "[parameters('usRealm')]"
+					},
+					"govRealm": {
+						"value": "[parameters('govRealm')]"
 					}
 				}
 			}
