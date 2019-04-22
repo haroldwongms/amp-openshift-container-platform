@@ -67,7 +67,7 @@
 			"defaultValue": {
 				"publisher": "redhat",
 				"offer": "rhel-ocp-marketplace",
-				"sku": "rhel75",
+				"sku": "rhel76",
 				"version": "latest"
 			},
 			"metadata": {
