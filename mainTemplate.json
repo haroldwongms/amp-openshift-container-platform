@@ -233,13 +233,6 @@
 				"description": "SSH public key for all VMs"
 			}
 		},
-		"keyVaultSubscriptionId": {
-			"type": "string",
-			"defaultValue": "[subscription().subscriptionId]",
-			"metadata": {
-				"description": "Subscription ID that contains the Key Vault"
-			}
-		},
 		"keyVaultResourceGroup": {
 			"type": "string",
 			"metadata": {

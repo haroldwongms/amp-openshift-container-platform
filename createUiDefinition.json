@@ -599,7 +599,6 @@
 			"nodeInstanceCount": "[int(steps('infrastructureSettings').nodeInstanceCount)]",
 			"nodeVmSize": "[steps('infrastructureSettings').nodeVmSize]",
 			"openshiftClusterPrefix": "[steps('infrastructureSettings').openshiftClusterPrefix]",
-			"keyVaultSubscriptionId": "[subscription().subscriptionId]",
 			"keyVaultResourceGroup": "[steps('infrastructureSettings').keyVaultResourceGroup]",
 			"keyVaultName": "[steps('infrastructureSettings').keyVaultName]",
 			"keyVaultSecret": "[steps('infrastructureSettings').keyVaultSecret]",
