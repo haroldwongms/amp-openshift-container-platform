@@ -235,7 +235,7 @@
 		},
 		"keyVaultSubscriptionId": {
 			"type": "string",
-			"defaultValue": "subscription().subscriptionId",
+			"defaultValue": "[subscription().subscriptionId]",
 			"metadata": {
 				"description": "Subscription ID that contains the Key Vault"
 			}

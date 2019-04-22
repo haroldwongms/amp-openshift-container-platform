@@ -599,6 +599,7 @@
 			"nodeInstanceCount": "[int(steps('infrastructureSettings').nodeInstanceCount)]",
 			"nodeVmSize": "[steps('infrastructureSettings').nodeVmSize]",
 			"openshiftClusterPrefix": "[steps('infrastructureSettings').openshiftClusterPrefix]",
+			"keyVaultSubscriptionId": "[subscription().subscriptionId]",
 			"keyVaultResourceGroup": "[steps('infrastructureSettings').keyVaultResourceGroup]",
 			"keyVaultName": "[steps('infrastructureSettings').keyVaultName]",
 			"keyVaultSecret": "[steps('infrastructureSettings').keyVaultSecret]",
@@ -626,10 +627,10 @@
 			"infraSubnetName": "[steps('infrastructureSettings').infraSubnetName]",
 			"nodeSubnetPrefix": "[steps('infrastructureSettings').nodeSubnetPrefix]",
 			"nodeSubnetName": "[steps('infrastructureSettings').nodeSubnetName]",
-			"existingMasterSubnetReference": "[steps('infrastructureSettings').masterSubnetName]",
-			"existingInfraSubnetReference": "[steps('infrastructureSettings').infraSubnetName]",
-			"existingCnsSubnetReference": "[steps('infrastructureSettings').nodeSubnetName]",
-			"existingNodeSubnetReference": "[steps('infrastructureSettings').nodeSubnetName]"
+			"existingMasterSubnetReference": "[steps('infrastructureSettings').virtualNetworkNewOrExisting]",
+			"existingInfraSubnetReference": "[steps('infrastructureSettings').virtualNetworkNewOrExisting]",
+			"existingCnsSubnetReference": "[steps('infrastructureSettings').virtualNetworkNewOrExisting]",
+			"existingNodeSubnetReference": "[steps('infrastructureSettings').virtualNetworkNewOrExisting]"
 		}
 	}
 }
