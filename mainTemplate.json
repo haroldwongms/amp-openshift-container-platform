@@ -637,8 +637,6 @@
 			"provider": "9d2c71fc-96ba-4b4a-93b3-14def5bc96fc"
 		},
 		"singlequote": "'",
-		"usRealm": "core.windows.net",
-		"govRealm": "core.usgovcloudapi.net",
 		"sshKeyPath": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
 		"bastionPrepScriptUrl": "[concat(parameters('baseUrl'), '/scripts/bastionPrep.sh')]",
 		"nodePrepScriptUrl": "[concat(parameters('baseUrl'), '/scripts/nodePrep.sh')]",
@@ -2613,11 +2611,8 @@
 					"minorVersion": {
 						"value": "[parameters('minorVersion')]"
 					},
-					"usRealm": {
-						"value": "[parameters('usRealm')]"
-					},
-					"govRealm": {
-						"value": "[parameters('govRealm')]"
+					"registryStorageUri": {
+						"value": "[reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables('newStorageAccountRegistry')), variables('apiVersionStorage')).primaryEndpoints['blob']]"
 					}
 				}
 			}

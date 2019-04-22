@@ -42,6 +42,7 @@ export INFRAPIPNAME=${35}
 export CUSTOMROUTINGCERTTYPE=${36}
 export CUSTOMMASTERCERTTYPE=${37}
 export MINORVERSION=${38}
+export REGISTRYURL=${39}
 export BASTION=$(hostname)
 
 # Set CNS to default storage type.  Will be overridden later if Azure is true
@@ -53,6 +54,10 @@ export DOMAIN=`domainname -d`
 # Determine if Commercial Azure or Azure Government
 CLOUD=$( curl -H Metadata:true "http://169.254.169.254/metadata/instance/compute/location?api-version=2017-04-02&format=text" | cut -c 1-2 )
 export CLOUD=${CLOUD^^}
+
+# Determine registry storage realm
+URL=$(echo $REGISTRYURL | cut -d '/' -f 3)
+DOCKERREGISTRYREALM="`echo $URL | cut -d '.' -f 3`.`echo $URL | cut -d '.' -f 4`.`echo $URL | cut -d '.' -f 5`"
 
 export MASTERLOOP=$((MASTERCOUNT - 1))
 export INFRALOOP=$((INFRACOUNT - 1))
@@ -73,10 +78,8 @@ sed -i -e '/Defaults    env_keep += "LC_TIME LC_ALL LANGUAGE LINGUAS _XKB_CHARSE
 # Create docker registry config based on Commercial Azure or Azure Government
 if [[ $CLOUD == "US" ]]
 then
-    export DOCKERREGISTRYREALM=core.usgovcloudapi.net
 	export CLOUDNAME="AzureUSGovernmentCloud"
 else
-	export DOCKERREGISTRYREALM=core.windows.net
 	export CLOUDNAME="AzurePublicCloud"
 fi
 
