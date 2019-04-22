@@ -2193,7 +2193,7 @@
 					"sshPrivateKey": {
 						"reference": {
 							"keyvault": {
-								"id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+								"id": "[concat('/subscriptions/', parameters('keyvaultsubscriptionid'), '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
 							},
 							"secretName": "[parameters('keyVaultSecret')]"
 						}
@@ -2207,7 +2207,7 @@
 					"customRoutingCaFile": {
 						"reference": {
 							"keyvault": {
-								"id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+								"id": "[concat('/subscriptions/', parameters('keyvaultsubscriptionid'), '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
 							},
 							"secretName": "[if(equals(parameters('routingCertType'),'custom'), 'routingcafile', parameters('keyVaultSecret'))]"
 						}
@@ -2215,7 +2215,7 @@
 					"customRoutingCertFile": {
 						"reference": {
 							"keyvault": {
-								"id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+								"id": "[concat('/subscriptions/', parameters('keyvaultsubscriptionid'), '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
 							},
 							"secretName": "[if(equals(parameters('routingCertType'),'custom'), 'routingcertfile', parameters('keyVaultSecret'))]"
 						}
@@ -2223,7 +2223,7 @@
 					"customRoutingKeyFile": {
 						"reference": {
 							"keyvault": {
-								"id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+								"id": "[concat('/subscriptions/', parameters('keyvaultsubscriptionid'), '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
 							},
 							"secretName": "[if(equals(parameters('routingCertType'),'custom'), 'routingkeyfile', parameters('keyVaultSecret'))]"
 						}
@@ -2231,7 +2231,7 @@
 					"customMasterCaFile": {
 						"reference": {
 							"keyvault": {
-								"id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+								"id": "[concat('/subscriptions/', parameters('keyvaultsubscriptionid'), '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
 							},
 							"secretName": "[if(equals(parameters('masterCertType'),'custom'), 'mastercafile', parameters('keyVaultSecret'))]"
 						}
@@ -2239,7 +2239,7 @@
 					"customMasterCertFile": {
 						"reference": {
 							"keyvault": {
-								"id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+								"id": "[concat('/subscriptions/', parameters('keyvaultsubscriptionid'), '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
 							},
 							"secretName": "[if(equals(parameters('masterCertType'),'custom'), 'mastercertfile', parameters('keyVaultSecret'))]"
 						}
@@ -2247,7 +2247,7 @@
 					"customMasterKeyFile": {
 						"reference": {
 							"keyvault": {
-								"id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+								"id": "[concat('/subscriptions/', parameters('keyvaultsubscriptionid'), '/resourceGroups/', parameters('keyVaultResourceGroup'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
 							},
 							"secretName": "[if(equals(parameters('masterCertType'),'custom'), 'masterkeyfile', parameters('keyVaultSecret'))]"
 						}
