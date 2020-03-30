@@ -2,13 +2,13 @@
 	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
 	"contentVersion": "1.0.0.0",
 	"parameters": {
-		"baseUrl": {
+		"_artifactsLocation": {
 			"type": "string",
 			"metadata": {
 				"description": "Base URL for Template Files",
 				"artifactsBaseUrl": ""
 			},
-			"defaultValue": "https://raw.githubusercontent.com/haroldwongms/amp-openshift-container-platform/master"
+			"defaultValue": "[deployment().properties.templateLink.uri]"
 		},
 		"location": {
           "type": "string",
@@ -631,23 +631,23 @@
 		},
 		"singlequote": "'",
 		"sshKeyPath": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
-		"bastionPrepScriptUrl": "[concat(parameters('baseUrl'), '/scripts/bastionPrep.sh')]",
-		"nodePrepScriptUrl": "[concat(parameters('baseUrl'), '/scripts/nodePrep.sh')]",
-		"masterPrepScriptUrl": "[concat(parameters('baseUrl'), '/scripts/masterPrep.sh')]",
-		"infraPrepScriptUrl": "[concat(parameters('baseUrl'), '/scripts/infraPrep.sh')]",
-		"openshiftDeploymentScriptUrl": "[concat(parameters('baseUrl'), '/scripts/deployOpenShift.sh')]",
+		"bastionPrepScriptUrl": "[concat(parameters('_artifactsLocation'), '/scripts/bastionPrep.sh')]",
+		"nodePrepScriptUrl": "[concat(parameters('_artifactsLocation'), '/scripts/nodePrep.sh')]",
+		"masterPrepScriptUrl": "[concat(parameters('_artifactsLocation'), '/scripts/masterPrep.sh')]",
+		"infraPrepScriptUrl": "[concat(parameters('_artifactsLocation'), '/scripts/infraPrep.sh')]",
+		"openshiftDeploymentScriptUrl": "[concat(parameters('_artifactsLocation'), '/scripts/deployOpenShift.sh')]",
 		"bastionPrepScriptFileName": "bastionPrep.sh",
 		"nodePrepScriptFileName": "nodePrep.sh",
 		"masterPrepScriptFileName": "masterPrep.sh",
 		"infraPrepScriptFileName": "infraPrep.sh",
 		"openshiftDeploymentScriptFileName": "deployOpenShift.sh",
-		"clusterNodeDeploymentTemplateUrl": "[concat(parameters('baseUrl'), '/nested/galleryclusternode.json')]",
-		"clusterCnsNodeDeploymentTemplateUrl": "[concat(parameters('baseUrl'), '/nested/galleryclustercnsnode.json')]",
-		"basicDeploymentTemplateUrl": "[concat(parameters('baseUrl'), '/nested/gallerybasic.json')]",
-		"openshiftDeploymentTemplateUrl": "[concat(parameters('baseUrl'), '/nested/openshiftdeploy.json')]",
-		"bastionPrepTemplateUrl": "[concat(parameters('baseUrl'), '/nested/bastionprep.json')]",
-		"masterPrepTemplateUrl": "[concat(parameters('baseUrl'), '/nested/masterprep.json')]",
-		"nodePrepTemplateUrl": "[concat(parameters('baseUrl'), '/nested/nodeprep.json')]",
+		"clusterNodeDeploymentTemplateUrl": "[concat(parameters('_artifactsLocation'), '/nested/galleryclusternode.json')]",
+		"clusterCnsNodeDeploymentTemplateUrl": "[concat(parameters('_artifactsLocation'), '/nested/galleryclustercnsnode.json')]",
+		"basicDeploymentTemplateUrl": "[concat(parameters('_artifactsLocation'), '/nested/gallerybasic.json')]",
+		"openshiftDeploymentTemplateUrl": "[concat(parameters('_artifactsLocation'), '/nested/openshiftdeploy.json')]",
+		"bastionPrepTemplateUrl": "[concat(parameters('_artifactsLocation'), '/nested/bastionprep.json')]",
+		"masterPrepTemplateUrl": "[concat(parameters('_artifactsLocation'), '/nested/masterprep.json')]",
+		"nodePrepTemplateUrl": "[concat(parameters('_artifactsLocation'), '/nested/nodeprep.json')]",
 		"vmSizesMap": {
 			"Standard_D2": {
 				"storageAccountType": "Standard_LRS",
